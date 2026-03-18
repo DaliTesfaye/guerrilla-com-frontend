@@ -37,7 +37,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex">
 
       {/* Left panel — brand */}
-      <div className="hidden lg:flex w-1/2 bg-brand flex-col items-center justify-center relative overflow-hidden px-12">
+      <div className="hidden lg:flex w-1/2 bg-[#2E3191] flex-col items-center justify-center relative overflow-hidden px-12">
         {/* Background decoration */}
         <div className="absolute -top-20 -right-20 w-[320px] h-80 rounded-full bg-brand-primary opacity-50" />
         <div className="absolute -bottom-15 -left-15 w-60 h-60 rounded-full bg-[#C7072C] opacity-20" />
@@ -52,7 +52,7 @@ export default function LoginPage() {
             priority
           />
           <p className="text-white/70 mt-6 text-sm leading-relaxed max-w-xs">
-            Gérez vos événements, services et projets depuis un tableau de bord centralisé.
+            Gérez vos événements, services et projets.
           </p>
         </div>
 
