@@ -3,8 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuthStore } from "../../store/authStore";
 import api from "@/lib/api";
+import { loginSchema, type LoginFormData } from "@/lib/validation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,23 +16,27 @@ export default function LoginPage() {
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: LoginFormData) => {
     setError("");
-    setLoading(true);
     try {
-      const res = await api.post("/auth/login", { email, password });
+      const res = await api.post("/auth/login", data);
       login(res.data.token, res.data.user);
       router.push("/dashboard");
     } catch (err: any) {
       setError(err.response?.data?.message || "Une erreur s'est produite. Veuillez réessayer.");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -80,7 +87,7 @@ export default function LoginPage() {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
 
             <div className="space-y-1.5">
               <Label htmlFor="email" className="text-gray-700 font-medium">
@@ -90,11 +97,12 @@ export default function LoginPage() {
                 id="email"
                 type="email"
                 placeholder="you@guerrillacom.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+                {...register("email")}
                 className="h-11 bg-white border-gray-200 focus-visible:ring-[#2E3191]"
               />
+              {errors.email?.message && (
+                <p className="text-xs text-[#C7072C]">{errors.email.message}</p>
+              )}
             </div>
 
             <div className="space-y-1.5">
@@ -105,11 +113,12 @@ export default function LoginPage() {
                 id="password"
                 type="password"
                 placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
+                {...register("password")}
                 className="h-11 bg-white border-gray-200 focus-visible:ring-[#2E3191]"
               />
+              {errors.password?.message && (
+                <p className="text-xs text-[#C7072C]">{errors.password.message}</p>
+              )}
             </div>
 
             {error && (
@@ -121,10 +130,10 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              disabled={loading}
+              disabled={isSubmitting}
               className="w-full h-11 bg-[#2E3191] hover:bg-[#1e2266] text-white font-semibold rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
             >
-              {loading ? (
+              {isSubmitting ? (
                 <span className="flex items-center gap-2">
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   Connexion en cours...

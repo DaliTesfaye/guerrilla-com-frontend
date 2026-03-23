@@ -3,45 +3,52 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import api from "@/lib/api";
-
-type Status = "active" | "inactive";
+import { createAdminSchema, type CreateAdminFormData } from "@/lib/validation";
 
 export default function CreateAdminPage() {
   const router = useRouter();
-
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<Status>("active");
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<CreateAdminFormData>({
+    resolver: zodResolver(createAdminSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      status: "active",
+    },
+  });
 
   const [generatedPassword, setGeneratedPassword] = useState("");
   const [createdEmail, setCreatedEmail] = useState("");
 
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: CreateAdminFormData) => {
     setError("");
-    setLoading(true);
 
     try {
-      const res = await api.post("/users", { name, email, status });
+      const res = await api.post("/users", data);
 
       setGeneratedPassword(res.data.generatedPassword);
-      setCreatedEmail(res.data.user?.email || email);
+      setCreatedEmail(res.data.user?.email || data.email);
 
-      setName("");
-      setEmail("");
-      setStatus("active");
+      reset({
+        name: "",
+        email: "",
+        status: "active",
+      });
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         setError(err.response?.data?.message || "Création impossible.");
       } else {
         setError("Création impossible.");
       }
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -61,7 +68,7 @@ export default function CreateAdminPage() {
       )}
 
       <div className="rounded-2xl border border-gray-200 bg-white p-6">
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <div className="space-y-1.5">
             <label htmlFor="name" className="text-sm font-medium text-gray-700">
               Nom complet
@@ -70,11 +77,12 @@ export default function CreateAdminPage() {
               id="name"
               type="text"
               placeholder="Ex: Ahmed Ben Salah"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
+              {...register("name")}
               className="w-full h-11 rounded-lg border border-gray-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E3191]"
             />
+            {errors.name?.message && (
+              <p className="text-xs text-[#C7072C]">{errors.name.message}</p>
+            )}
           </div>
 
           <div className="space-y-1.5">
@@ -85,11 +93,12 @@ export default function CreateAdminPage() {
               id="email"
               type="email"
               placeholder="admin@guerrillacom.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+              {...register("email")}
               className="w-full h-11 rounded-lg border border-gray-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E3191]"
             />
+            {errors.email?.message && (
+              <p className="text-xs text-[#C7072C]">{errors.email.message}</p>
+            )}
           </div>
 
           <div className="space-y-1.5">
@@ -98,22 +107,24 @@ export default function CreateAdminPage() {
             </label>
             <select
               id="status"
-              value={status}
-              onChange={(e) => setStatus(e.target.value as Status)}
+              {...register("status")}
               className="w-full h-11 rounded-lg border border-gray-200 px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#2E3191]"
             >
               <option value="active">active</option>
               <option value="inactive">inactive</option>
             </select>
+            {errors.status?.message && (
+              <p className="text-xs text-[#C7072C]">{errors.status.message}</p>
+            )}
           </div>
 
           <div className="flex items-center gap-3 pt-2">
             <button
               type="submit"
-              disabled={loading}
+              disabled={isSubmitting}
               className="inline-flex items-center rounded-lg bg-[#2E3191] px-4 py-2 text-sm font-medium text-white hover:bg-[#1e2266] transition disabled:opacity-70"
             >
-              {loading ? "Création..." : "Créer l’admin"}
+              {isSubmitting ? "Création..." : "Créer l’admin"}
             </button>
 
             <button

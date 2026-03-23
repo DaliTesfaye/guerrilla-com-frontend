@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import axios from "axios";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import api from "@/lib/api";
+import { updateUserSchema, type UpdateUserFormData } from "@/lib/validation";
 
 type Status = "active" | "inactive";
 
@@ -20,24 +23,34 @@ export default function EditUserPage() {
   const router = useRouter();
   const params = useParams();
   const userId = params.id as string;
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<UpdateUserFormData>({
+    resolver: zodResolver(updateUserSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      status: "active",
+    },
+  });
 
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<Status>("active");
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const res = await api.get(`/users/${userId}`);
         setUser(res.data);
-        setName(res.data.name);
-        setEmail(res.data.email);
-        setStatus(res.data.status);
+        reset({
+          name: res.data.name,
+          email: res.data.email,
+          status: res.data.status as Status,
+        });
       } catch (err: unknown) {
         if (axios.isAxiosError(err)) {
           setError(
@@ -53,15 +66,13 @@ export default function EditUserPage() {
     };
 
     fetchUser();
-  }, [userId]);
+  }, [userId, reset]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: UpdateUserFormData) => {
     setError("");
-    setSubmitting(true);
 
     try {
-      await api.patch(`/users/${userId}`, { name, email, status });
+      await api.patch(`/users/${userId}`, data);
       alert("Utilisateur modifié avec succès!");
       router.push("/dashboard/users");
     } catch (err: unknown) {
@@ -70,8 +81,6 @@ export default function EditUserPage() {
       } else {
         setError("Modification impossible.");
       }
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -121,7 +130,7 @@ export default function EditUserPage() {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <div className="space-y-1.5">
             <label htmlFor="name" className="text-sm font-medium text-gray-700">
               Nom complet
@@ -130,11 +139,12 @@ export default function EditUserPage() {
               id="name"
               type="text"
               placeholder="Ex: Ahmed Ben Salah"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
+              {...register("name")}
               className="w-full h-11 rounded-lg border border-gray-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E3191]"
             />
+            {errors.name?.message && (
+              <p className="text-xs text-[#C7072C]">{errors.name.message}</p>
+            )}
           </div>
 
           <div className="space-y-1.5">
@@ -148,11 +158,12 @@ export default function EditUserPage() {
               id="email"
               type="email"
               placeholder="admin@guerrillacom.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+              {...register("email")}
               className="w-full h-11 rounded-lg border border-gray-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E3191]"
             />
+            {errors.email?.message && (
+              <p className="text-xs text-[#C7072C]">{errors.email.message}</p>
+            )}
           </div>
 
           <div className="space-y-1.5">
@@ -164,22 +175,24 @@ export default function EditUserPage() {
             </label>
             <select
               id="status"
-              value={status}
-              onChange={(e) => setStatus(e.target.value as Status)}
+              {...register("status")}
               className="w-full h-11 rounded-lg border border-gray-200 px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#2E3191]"
             >
               <option value="active">active</option>
               <option value="inactive">inactive</option>
             </select>
+            {errors.status?.message && (
+              <p className="text-xs text-[#C7072C]">{errors.status.message}</p>
+            )}
           </div>
 
           <div className="flex items-center gap-3 pt-2">
             <button
               type="submit"
-              disabled={submitting}
+              disabled={isSubmitting}
               className="inline-flex items-center rounded-lg bg-[#2E3191] px-4 py-2 text-sm font-medium text-white hover:bg-[#1e2266] transition disabled:opacity-70"
             >
-              {submitting ? "Mise à jour..." : "Enregistrer les modifications"}
+              {isSubmitting ? "Mise à jour..." : "Enregistrer les modifications"}
             </button>
 
             <button
