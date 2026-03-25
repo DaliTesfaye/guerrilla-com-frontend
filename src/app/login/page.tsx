@@ -22,6 +22,7 @@ export default function LoginPage() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
+    setValue,
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -42,6 +43,8 @@ export default function LoginPage() {
       router.push("/dashboard");
     } catch (err: any) {
       setError(err.response?.data?.message || "Une erreur s'est produite. Veuillez réessayer.");
+      // Only clear password, email stays
+      setValue("password", "");
     }
   };
 
