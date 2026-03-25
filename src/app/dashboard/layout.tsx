@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Sidebar from "@/components/dashboard/Sidebar";
 import Header from "@/components/dashboard/Header";
 import { useAuthStore } from "@/store/authStore";
@@ -12,7 +12,9 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const token = useAuthStore((state) => state.token);
+  const user = useAuthStore((state) => state.user);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -24,6 +26,24 @@ export default function DashboardLayout({
       router.replace("/login");
     }
   }, [hydrated, token, router]);
+
+  useEffect(() => {
+    if (!hydrated || !token || !user) {
+      return;
+    }
+
+    if (user.mustChangePassword && pathname !== "/dashboard/change-password") {
+      router.replace("/dashboard/change-password");
+      return;
+    }
+
+    if (
+      user.role !== "super_admin" &&
+      pathname.startsWith("/dashboard/users")
+    ) {
+      router.replace("/dashboard/change-password");
+    }
+  }, [hydrated, token, user, pathname, router]);
 
   if (!hydrated || !token) {
     return (

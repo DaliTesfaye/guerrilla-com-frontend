@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 const titles: Record<string, string> = {
   "/dashboard/users": "Gestion des Utilisateurs",
   "/dashboard/users/new": "Créer un Admin",
+  "/dashboard/change-password": "Changer le mot de passe",
 };
 
 export default function Header() {

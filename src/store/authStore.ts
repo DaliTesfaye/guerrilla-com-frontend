@@ -6,7 +6,8 @@ interface AuthUser {
   name: string;
   email: string;
   role: "super_admin" | "admin" | "client";
-  status: "active" | "inactive";
+  status?: "active" | "inactive";
+  mustChangePassword?: boolean;
 }
 
 interface AuthState {

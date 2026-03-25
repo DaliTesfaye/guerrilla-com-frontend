@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import axios from "axios";
 import api from "@/lib/api";
+import { useAuthStore } from "@/store/authStore";
 
 type User = {
   _id: string;
@@ -15,6 +16,8 @@ type User = {
 };
 
 export default function UsersPage() {
+  const user = useAuthStore((state) => state.user);
+  const isSuperAdmin = user?.role === "super_admin";
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -68,12 +71,14 @@ export default function UsersPage() {
           <p className="text-sm text-gray-500 mt-1">Liste des comptes de la plateforme</p>
         </div>
 
-        <Link
-          href="/dashboard/users/new"
-          className="inline-flex items-center rounded-lg bg-[#2E3191] px-4 py-2 text-sm font-medium text-white hover:bg-[#1e2266] transition"
-        >
-          + Créer Admin
-        </Link>
+        {isSuperAdmin && (
+          <Link
+            href="/dashboard/users/new"
+            className="inline-flex items-center rounded-lg bg-[#2E3191] px-4 py-2 text-sm font-medium text-white hover:bg-[#1e2266] transition"
+          >
+            + Créer Admin
+          </Link>
+        )}
       </div>
 
       {error && (
@@ -93,13 +98,15 @@ export default function UsersPage() {
                 <th className="px-4 py-3 text-left font-medium">Rôle</th>
                 <th className="px-4 py-3 text-left font-medium">Statut</th>
                 <th className="px-4 py-3 text-left font-medium">Créé le</th>
-                <th className="px-4 py-3 text-right font-medium">Actions</th>
+                {isSuperAdmin && (
+                  <th className="px-4 py-3 text-right font-medium">Actions</th>
+                )}
               </tr>
             </thead>
             <tbody>
               {users.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan={isSuperAdmin ? 6 : 5} className="px-4 py-8 text-center text-gray-500">
                     Aucun utilisateur trouvé.
                   </td>
                 </tr>
@@ -131,21 +138,23 @@ export default function UsersPage() {
                       {new Date(user.createdAt).toLocaleDateString("fr-FR")}
                     </td>
 
-                    <td className="px-4 py-3 text-right space-x-3">
-                      <Link
-                        href={`/dashboard/users/${user._id}/edit`}
-                        className="text-xs font-medium text-brand-primary hover:underline"
-                      >
-                        Modifier
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(user._id)}
-                        className="text-xs font-medium text-[#655d5e] hover:underline"
-                      >
-                        Supprimer
-                      </button>
-                    </td>
+                    {isSuperAdmin && (
+                      <td className="px-4 py-3 text-right space-x-3">
+                        <Link
+                          href={`/dashboard/users/${user._id}/edit`}
+                          className="text-xs font-medium text-brand-primary hover:underline"
+                        >
+                          Modifier
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(user._id)}
+                          className="text-xs font-medium text-[#655d5e] hover:underline"
+                        >
+                          Supprimer
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))
               )}

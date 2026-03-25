@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuthStore } from "../../store/authStore";
@@ -34,6 +35,10 @@ export default function LoginPage() {
     try {
       const res = await api.post("/auth/login", data);
       login(res.data.token, res.data.user);
+      if (res.data.user?.mustChangePassword) {
+        router.push("/dashboard/change-password");
+        return;
+      }
       router.push("/dashboard");
     } catch (err: any) {
       setError(err.response?.data?.message || "Une erreur s'est produite. Veuillez réessayer.");
@@ -106,9 +111,17 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="password" className="text-gray-700 font-medium">
-                Mot de passe
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password" className="text-gray-700 font-medium">
+                  Mot de passe
+                </Label>
+                <Link
+                  href="/forgot-password"
+                  className="text-xs text-[#2E3191] hover:text-[#1e2266] hover:underline"
+                >
+                  Mot de passe oublié ?
+                </Link>
+              </div>
               <Input
                 id="password"
                 type="password"
