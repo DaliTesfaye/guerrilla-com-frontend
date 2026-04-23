@@ -34,14 +34,6 @@ export default function DashboardLayout({
 
     if (user.mustChangePassword && pathname !== "/dashboard/change-password") {
       router.replace("/dashboard/change-password");
-      return;
-    }
-
-    if (
-      user.role !== "super_admin" &&
-      pathname.startsWith("/dashboard/users")
-    ) {
-      router.replace("/dashboard/change-password");
     }
   }, [hydrated, token, user, pathname, router]);
 

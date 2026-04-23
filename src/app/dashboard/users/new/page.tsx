@@ -33,7 +33,7 @@ export default function CreateAdminPage() {
     setError("");
 
     try {
-      const res = await api.post("/users", data);
+      const res = await api.post("/users", { ...data, role: "admin" });
 
       setGeneratedPassword(res.data.generatedPassword);
       setCreatedEmail(res.data.user?.email || data.email);

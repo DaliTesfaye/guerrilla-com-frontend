@@ -14,7 +14,7 @@ type User = {
   _id: string;
   name: string;
   email: string;
-  role: "super_admin" | "admin" | "client";
+  role: "admin";
   status: Status;
   createdAt?: string;
 };

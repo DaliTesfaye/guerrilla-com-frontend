@@ -14,14 +14,6 @@ export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuthStore();
-  const isSuperAdmin = user?.role === "super_admin";
-
-  const visibleLinks = links.filter((link) => {
-    if (isSuperAdmin) {
-      return true;
-    }
-    return link.href === "/dashboard/change-password";
-  });
 
   const handleLogout = () => {
     logout();
@@ -35,7 +27,7 @@ export default function Sidebar() {
         <p className="text-xs text-white/70 mt-1">Admin Dashboard</p>
       </div>
       <nav className="px-3 py-4 space-y-1">
-        {visibleLinks.map((link) => {
+        {links.map((link) => {
           const active = pathname === link.href;
           return (
             <Link
