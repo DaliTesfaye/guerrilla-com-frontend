@@ -16,6 +16,22 @@ export const createAdminSchema = z.object({
 
 export type CreateAdminFormData = z.infer<typeof createAdminSchema>;
 
+export const createProjectSchema = z.object({
+  name: z.string().trim().min(1, "Name is required"),
+  description: z.string().trim().optional(),
+  status: z.enum(["active", "archived"]),
+});
+
+export type CreateProjectFormData = z.infer<typeof createProjectSchema>;
+
+export const createEventSchema = z.object({
+  name: z.string().trim().min(1, "Name is required"),
+  date: z.string().trim().min(1, "Date is required"),
+  type: z.string().trim().optional(),
+});
+
+export type CreateEventFormData = z.infer<typeof createEventSchema>;
+
 // Update User schema - all fields optional but at least one required
 export const updateUserSchema = z.object({
   name: z.string().trim().min(1, 'Name must not be empty').max(50, 'Name must be 50 characters or less').optional(),

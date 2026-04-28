@@ -8,6 +8,7 @@ const navLinks = [
   { label: "À PROPOS", sectionId: "about" },
   { label: "SERVICES", sectionId: "services" },
   { label: "PROJETS", sectionId: "projects" },
+  { label: "EVENEMENTS", sectionId: "events" },
   { label: "PROCEDURES", sectionId: "procedures" },
   { label: "PARTENAIRES", sectionId: "partenaires" },
   { label: "CONTACT", sectionId: "contact" },

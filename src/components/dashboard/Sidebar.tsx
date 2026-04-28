@@ -5,8 +5,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "../../store/authStore";
 
 const links = [
+  { href: "/dashboard/home", label: "Home" },
   { href: "/dashboard/users", label: "Utilisateurs" },
   { href: "/dashboard/users/new", label: "Creer Admin" },
+  { href: "/dashboard/projects", label: "Projets" },
+  { href: "/dashboard/events", label: "Evenements" },
   { href: "/dashboard/change-password", label: "Changer mot de passe" },
 ];
 
@@ -28,7 +31,10 @@ export default function Sidebar() {
       </div>
       <nav className="px-3 py-4 space-y-1">
         {links.map((link) => {
-          const active = pathname === link.href;
+          const active =
+            pathname === link.href ||
+            (link.href === "/dashboard/projects" && pathname.startsWith("/dashboard/projects")) ||
+            (link.href === "/dashboard/events" && pathname.startsWith("/dashboard/events"));
           return (
             <Link
               key={link.href}

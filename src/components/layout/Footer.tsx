@@ -5,6 +5,7 @@ const footerLinks = [
   { label: "Accueil", sectionId: "hero" },
   { label: "A propos", sectionId: "about" },
   { label: "Services", sectionId: "services" },
+  { label: "Evenements", sectionId: "events" },
   { label: "Partenaires", sectionId: "partenaires" },
   { label: "Contact", sectionId: "contact" },
 ];
