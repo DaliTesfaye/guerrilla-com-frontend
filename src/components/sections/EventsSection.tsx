@@ -3,7 +3,9 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { CalendarDays, Tag } from "lucide-react";
 import {
+  fetchEventParticipantsCount,
   fetchPublicEvents,
+  participateInEvent,
   type PublicEvent,
 } from "@/features/events/api/events";
 
@@ -22,15 +24,35 @@ export default function EventsSection() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [submitError, setSubmitError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [modalSuccessMessage, setModalSuccessMessage] = useState("");
+  const [participantsCountByEvent, setParticipantsCountByEvent] = useState<
+    Record<string, number>
+  >({});
 
   useEffect(() => {
     const loadEvents = async () => {
       try {
         const data = await fetchPublicEvents();
         setEvents(data);
+
+        const countsEntries = await Promise.all(
+          data.map(async (event) => {
+            try {
+              const count = await fetchEventParticipantsCount(event._id);
+              return [event._id, count] as const;
+            } catch {
+              return [event._id, 0] as const;
+            }
+          })
+        );
+
+        setParticipantsCountByEvent(Object.fromEntries(countsEntries));
       } catch {
         setEvents([]);
+        setParticipantsCountByEvent({});
       }
     };
 
@@ -42,27 +64,84 @@ export default function EventsSection() {
     setFullName("");
     setEmail("");
     setEmailError("");
+    setSubmitError("");
+    setModalSuccessMessage("");
   };
 
   const closeModal = () => {
     setSelectedEvent(null);
     setEmailError("");
+    setSubmitError("");
+    setModalSuccessMessage("");
+    setIsSubmitting(false);
   };
 
-  const handleParticipate = (e: FormEvent<HTMLFormElement>) => {
+  const refreshParticipantsCount = async (eventId: string) => {
+    const count = await fetchEventParticipantsCount(eventId);
+    setParticipantsCountByEvent((prev) => ({
+      ...prev,
+      [eventId]: count,
+    }));
+  };
+
+  const handleParticipate = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setEmailError("");
+    setSubmitError("");
     setSuccessMessage("");
+    setModalSuccessMessage("");
 
     if (!email.trim()) {
       setEmailError("L'email est obligatoire.");
       return;
     }
 
-    setSuccessMessage("Votre demande de participation a bien ete enregistree.");
-    setFullName("");
-    setEmail("");
-    setSelectedEvent(null);
+    if (!selectedEvent) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await participateInEvent(selectedEvent._id, {
+        email: email.trim(),
+        name: fullName.trim() || undefined,
+      });
+
+      await refreshParticipantsCount(selectedEvent._id);
+      setModalSuccessMessage("Participation enregistrée ✅");
+      setSuccessMessage("Participation enregistrée ✅");
+      setFullName("");
+      setEmail("");
+      window.setTimeout(() => {
+        closeModal();
+      }, 5000);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "";
+      const normalized = message.toLowerCase();
+      const status =
+        typeof err === "object" && err !== null && "status" in err
+          ? Number((err as { status?: number }).status)
+          : undefined;
+
+      if (
+        status === 409 ||
+        normalized.includes("deja") ||
+        normalized.includes("déjà") ||
+        normalized.includes("already") ||
+        normalized.includes("exist") ||
+        normalized.includes("registered") ||
+        normalized.includes("enregistr")
+      ) {
+        setSubmitError("Votre email est deja enregistree");
+      } else if (normalized.includes("email")) {
+        setSubmitError("Email invalide");
+      } else {
+        setSubmitError(message || "Une erreur est survenue.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   useEffect(() => {
@@ -132,6 +211,10 @@ export default function EventsSection() {
 
                           <h3 className="mt-3 text-lg font-extrabold text-brand-primary">{event.name}</h3>
 
+                          <p className="mt-2 text-sm font-medium text-slate-600">
+                            👥 {participantsCountByEvent[event._id] ?? 0} participants
+                          </p>
+
                           <div className="mt-4 flex items-center gap-2 text-xs text-slate-500">
                             <Tag size={13} className="shrink-0 text-brand-danger" />
                             <span>{fallbackType}</span>
@@ -178,6 +261,21 @@ export default function EventsSection() {
             </div>
 
             <form className="mt-5 space-y-4" onSubmit={handleParticipate}>
+              {modalSuccessMessage && (
+                <div className="rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+                  <div className="flex items-center justify-between gap-3">
+                    <span>{modalSuccessMessage}</span>
+                    <button
+                      type="button"
+                      onClick={closeModal}
+                      className="rounded-md border border-emerald-200 bg-white px-2 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-100"
+                    >
+                      Fermer
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-1.5">
                 <label htmlFor="event-email" className="text-sm font-medium text-gray-700">
                   Email *
@@ -192,6 +290,7 @@ export default function EventsSection() {
                   className="h-11 w-full rounded-lg border border-gray-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
                 />
                 {emailError && <p className="text-xs text-brand-danger">{emailError}</p>}
+                {submitError && <p className="text-xs text-brand-danger">{submitError}</p>}
               </div>
 
               <div className="space-y-1.5">
@@ -218,9 +317,10 @@ export default function EventsSection() {
                 </button>
                 <button
                   type="submit"
+                  disabled={isSubmitting}
                   className="rounded-lg bg-brand-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-primary-dark"
                 >
-                  Confirmer
+                  {isSubmitting ? "Envoi..." : "Confirmer"}
                 </button>
               </div>
             </form>
