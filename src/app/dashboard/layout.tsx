@@ -37,6 +37,17 @@ export default function DashboardLayout({
     }
   }, [hydrated, token, user, pathname, router]);
 
+  useEffect(() => {
+    if (!hydrated || !token || !user) {
+      return;
+    }
+
+    const isUsersManagementRoute = pathname.startsWith("/dashboard/users");
+    if (isUsersManagementRoute && user.role !== "super_admin") {
+      router.replace("/dashboard/home");
+    }
+  }, [hydrated, token, user, pathname, router]);
+
   if (!hydrated || !token) {
     return (
       <div className="min-h-screen bg-[#f4f5fb] flex items-center justify-center text-sm text-gray-500">

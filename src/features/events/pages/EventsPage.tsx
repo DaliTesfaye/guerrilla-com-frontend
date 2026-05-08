@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import axios from "axios";
 import api from "@/lib/api";
+import { fetchParticipantsCountByEventIds } from "@/features/events/api/events";
 
 type EventItem = {
   _id: string;
@@ -16,6 +17,9 @@ type EventItem = {
 
 export default function EventsPage() {
   const [events, setEvents] = useState<EventItem[]>([]);
+  const [participantsCountByEvent, setParticipantsCountByEvent] = useState<
+    Record<string, number>
+  >({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -24,13 +28,20 @@ export default function EventsPage() {
       setError("");
       try {
         const res = await api.get("/events");
-        setEvents(Array.isArray(res.data) ? res.data : []);
+        const eventList = Array.isArray(res.data) ? (res.data as EventItem[]) : [];
+        setEvents(eventList);
+
+        const participantsMap = await fetchParticipantsCountByEventIds(
+          eventList.map((event) => event._id)
+        );
+        setParticipantsCountByEvent(participantsMap);
       } catch (err: unknown) {
         if (axios.isAxiosError(err)) {
           setError(err.response?.data?.message || "Impossible de charger les evenements.");
         } else {
           setError("Impossible de charger les evenements.");
         }
+        setParticipantsCountByEvent({});
       } finally {
         setLoading(false);
       }
@@ -79,6 +90,9 @@ export default function EventsPage() {
               <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div className="min-w-0">
                   <p className="text-base font-semibold text-gray-900 truncate">{event.name}</p>
+                  <p className="mt-1 text-xs text-gray-600">
+                    👥 {participantsCountByEvent[event._id] ?? 0} participants
+                  </p>
                   {event.createdAt && (
                     <p className="mt-1 text-xs text-gray-500">
                       Cree le {new Date(event.createdAt).toLocaleDateString("fr-FR")}

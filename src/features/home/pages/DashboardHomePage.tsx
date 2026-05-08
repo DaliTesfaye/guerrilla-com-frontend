@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import api from "@/lib/api";
+import { fetchParticipantsCountByEventIds } from "@/features/events/api/events";
 
 type Project = {
   _id: string;
@@ -23,6 +24,9 @@ type EventItem = {
 export default function DashboardHomePage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [events, setEvents] = useState<EventItem[]>([]);
+  const [participantsCountByEvent, setParticipantsCountByEvent] = useState<
+    Record<string, number>
+  >({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -35,8 +39,20 @@ export default function DashboardHomePage() {
           api.get("/events"),
         ]);
 
-        setProjects(Array.isArray(projectsRes.data) ? projectsRes.data : []);
-        setEvents(Array.isArray(eventsRes.data) ? eventsRes.data : []);
+        const projectsList = Array.isArray(projectsRes.data)
+          ? (projectsRes.data as Project[])
+          : [];
+        const eventsList = Array.isArray(eventsRes.data)
+          ? (eventsRes.data as EventItem[])
+          : [];
+
+        setProjects(projectsList);
+        setEvents(eventsList);
+
+        const participantsMap = await fetchParticipantsCountByEventIds(
+          eventsList.map((event) => event._id)
+        );
+        setParticipantsCountByEvent(participantsMap);
       } catch (err: unknown) {
         if (axios.isAxiosError(err)) {
           setError(
@@ -46,6 +62,7 @@ export default function DashboardHomePage() {
         } else {
           setError("Impossible de charger les donnees du dashboard.");
         }
+        setParticipantsCountByEvent({});
       } finally {
         setLoading(false);
       }
@@ -163,6 +180,9 @@ export default function DashboardHomePage() {
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium text-gray-900">
                         {event.name}
+                      </p>
+                      <p className="mt-1 text-xs text-gray-600">
+                        👥 {participantsCountByEvent[event._id] ?? 0} participants
                       </p>
                       <p className="mt-1 text-xs text-gray-500">
                         Date {new Date(event.date).toLocaleDateString("fr-FR")}

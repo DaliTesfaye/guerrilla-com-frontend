@@ -5,7 +5,7 @@ interface AuthUser {
   _id: string;
   name: string;
   email: string;
-  role: "admin";
+  role: "admin" | "super_admin";
   status?: "active" | "inactive";
   mustChangePassword?: boolean;
 }

@@ -42,6 +42,23 @@ export async function fetchEventParticipantsCount(eventId: string): Promise<numb
   return typeof data.participantsCount === "number" ? data.participantsCount : 0;
 }
 
+export async function fetchParticipantsCountByEventIds(
+  eventIds: string[]
+): Promise<Record<string, number>> {
+  const entries = await Promise.all(
+    eventIds.map(async (eventId) => {
+      try {
+        const count = await fetchEventParticipantsCount(eventId);
+        return [eventId, count] as const;
+      } catch {
+        return [eventId, 0] as const;
+      }
+    })
+  );
+
+  return Object.fromEntries(entries);
+}
+
 export async function participateInEvent(
   eventId: string,
   payload: ParticipatePayload
