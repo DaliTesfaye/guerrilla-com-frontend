@@ -6,9 +6,10 @@ import { useAuthStore } from "../../store/authStore";
 
 const links = [
   { href: "/dashboard/home", label: "Home" },
+  { href: "/dashboard/profile", label: "Mon profil" },
   { href: "/dashboard/projects", label: "Projets" },
   { href: "/dashboard/events", label: "Evenements" },
-  { href: "/dashboard/change-password", label: "Changer mot de passe" },
+  { href: "/dashboard/services", label: "Services" },
 ];
 
 export default function Sidebar() {
@@ -43,8 +44,10 @@ export default function Sidebar() {
         {navLinks.map((link) => {
           const active =
             pathname === link.href ||
+            (link.href === "/dashboard/profile" && pathname.startsWith("/dashboard/profile")) ||
             (link.href === "/dashboard/projects" && pathname.startsWith("/dashboard/projects")) ||
-            (link.href === "/dashboard/events" && pathname.startsWith("/dashboard/events"));
+            (link.href === "/dashboard/events" && pathname.startsWith("/dashboard/events")) ||
+            (link.href === "/dashboard/services" && pathname.startsWith("/dashboard/services"));
           return (
             <Link
               key={link.href}

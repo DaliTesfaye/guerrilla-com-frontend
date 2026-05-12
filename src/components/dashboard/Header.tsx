@@ -4,12 +4,14 @@ import { usePathname } from "next/navigation";
 
 const titles: Record<string, string> = {
   "/dashboard/home": "Dashboard Home",
+  "/dashboard/profile": "Mon profil",
   "/dashboard/users": "Gestion des Utilisateurs",
   "/dashboard/users/new": "Créer un Admin",
   "/dashboard/projects": "Gestion des Projets",
   "/dashboard/projects/create": "Creer un Projet",
   "/dashboard/events": "Gestion des Evenements",
   "/dashboard/events/create": "Creer un Evenement",
+  "/dashboard/services": "Gestion des Services",
   "/dashboard/change-password": "Changer le mot de passe",
 };
 

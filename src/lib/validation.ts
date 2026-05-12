@@ -32,6 +32,17 @@ export const createEventSchema = z.object({
 
 export type CreateEventFormData = z.infer<typeof createEventSchema>;
 
+export const updateProfileSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, "Name is required")
+    .max(50, "Name must be 50 characters or less"),
+  email: z.string().email("Valid email is required").trim().toLowerCase(),
+});
+
+export type UpdateProfileFormData = z.infer<typeof updateProfileSchema>;
+
 // Update User schema - all fields optional but at least one required
 export const updateUserSchema = z.object({
   name: z.string().trim().min(1, 'Name must not be empty').max(50, 'Name must be 50 characters or less').optional(),
