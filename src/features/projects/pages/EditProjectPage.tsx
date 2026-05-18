@@ -1,76 +1,111 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createDashboardProject } from "@/features/projects/api/projects";
 import {
-  createProjectSchema,
-  type CreateProjectFormData,
-} from "@/lib/validation";
+  getDashboardProjectById,
+  updateDashboardProject,
+} from "@/features/projects/api/projects";
+import { updateProjectSchema, type UpdateProjectFormData } from "@/lib/validation";
 
 const statusOptions = ["planned", "active", "completed"] as const;
 
-export default function CreateProjectPage() {
+export default function EditProjectPage() {
   const router = useRouter();
+  const params = useParams();
+  const projectId = params.id as string;
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting },
-  } = useForm<CreateProjectFormData>({
-    resolver: zodResolver(createProjectSchema),
+  } = useForm<UpdateProjectFormData>({
+    resolver: zodResolver(updateProjectSchema),
     defaultValues: {
       name: "",
       description: "",
       clientName: "",
-      status: statusOptions[0],
+      status: "planned",
       startDate: "",
       endDate: "",
       image: "",
     },
   });
 
-  const onSubmit = async (data: CreateProjectFormData) => {
+  useEffect(() => {
+    const loadProject = async () => {
+      setError("");
+      try {
+        const project = await getDashboardProjectById(projectId);
+        reset({
+          name: project.name,
+          description: project.description,
+          clientName: project.clientName,
+          status: project.status,
+          startDate: project.startDate ? project.startDate.slice(0, 10) : "",
+          endDate: project.endDate ? project.endDate.slice(0, 10) : "",
+          budget: project.budget,
+          image: project.image || "",
+        });
+      } catch (err: unknown) {
+        if (axios.isAxiosError(err)) {
+          setError(err.response?.data?.message || "Impossible de charger le projet.");
+        } else {
+          setError("Impossible de charger le projet.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProject();
+  }, [projectId, reset]);
+
+  const onSubmit = async (data: UpdateProjectFormData) => {
     setError("");
     setSuccess("");
 
     try {
-      const payload = {
-        name: data.name.trim(),
-        description: data.description.trim(),
-        clientName: data.clientName.trim(),
+      await updateDashboardProject(projectId, {
+        name: data.name?.trim(),
+        description: data.description?.trim(),
+        clientName: data.clientName?.trim(),
         status: data.status,
         startDate: data.startDate,
         endDate: data.endDate,
         budget: data.budget,
         image: data.image?.trim() || undefined,
-      };
+      });
 
-      await createDashboardProject(payload);
-      setSuccess("Projet cree avec succes. Redirection...");
-
+      setSuccess("Projet modifie avec succes. Redirection...");
       setTimeout(() => {
-        router.push("/dashboard/projects");
+        router.push(`/dashboard/projects/${projectId}`);
       }, 900);
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.message || "Creation impossible.");
+        setError(err.response?.data?.message || "Modification impossible.");
       } else {
-        setError("Creation impossible.");
+        setError("Modification impossible.");
       }
     }
   };
 
+  if (loading) {
+    return <div className="text-sm text-gray-500">Chargement du projet...</div>;
+  }
+
   return (
     <section className="max-w-3xl space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Creer un Projet</h1>
-        <p className="text-sm text-gray-500 mt-1">Ajoutez un nouveau projet a la plateforme.</p>
+        <h1 className="text-2xl font-semibold text-gray-900">Modifier le projet</h1>
+        <p className="mt-1 text-sm text-gray-500">Mettez a jour les informations du projet.</p>
       </div>
 
       {error && (
@@ -94,13 +129,10 @@ export default function CreateProjectPage() {
             <input
               id="name"
               type="text"
-              placeholder="Ex: Campagne Back To School"
               {...register("name")}
               className="w-full h-11 rounded-lg border border-gray-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E3191]"
             />
-            {errors.name?.message && (
-              <p className="text-xs text-[#C7072C]">{errors.name.message}</p>
-            )}
+            {errors.name?.message && <p className="text-xs text-[#C7072C]">{errors.name.message}</p>}
           </div>
 
           <div className="space-y-1.5">
@@ -110,7 +142,6 @@ export default function CreateProjectPage() {
             <textarea
               id="description"
               rows={4}
-              placeholder="Description du projet"
               {...register("description")}
               className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E3191]"
             />
@@ -126,7 +157,6 @@ export default function CreateProjectPage() {
             <input
               id="clientName"
               type="text"
-              placeholder="Ex: Coca-Cola"
               {...register("clientName")}
               className="w-full h-11 rounded-lg border border-gray-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E3191]"
             />
@@ -214,7 +244,6 @@ export default function CreateProjectPage() {
               <input
                 id="image"
                 type="url"
-                placeholder="https://example.com/project.jpg"
                 {...register("image", {
                   setValueAs: (value: string) =>
                     typeof value === "string" && value.trim() === ""
@@ -235,15 +264,15 @@ export default function CreateProjectPage() {
               disabled={isSubmitting}
               className="inline-flex items-center rounded-lg bg-[#2E3191] px-4 py-2 text-sm font-medium text-white hover:bg-[#1e2266] transition disabled:opacity-70"
             >
-              {isSubmitting ? "Creation..." : "Creer le projet"}
+              {isSubmitting ? "Mise a jour..." : "Enregistrer les modifications"}
             </button>
 
             <button
               type="button"
-              onClick={() => router.push("/dashboard/projects")}
+              onClick={() => router.push(`/dashboard/projects/${projectId}`)}
               className="inline-flex items-center rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
             >
-              Retour a la liste
+              Annuler
             </button>
           </div>
         </form>

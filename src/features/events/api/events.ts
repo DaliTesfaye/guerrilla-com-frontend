@@ -1,8 +1,56 @@
+import api from "@/lib/api";
+
+export type EventStatus = "draft" | "planned" | "ongoing" | "completed";
+
+export type EventItem = {
+  _id: string;
+  title: string;
+  description?: string;
+  service: string;
+  projectId: string;
+  status: EventStatus;
+  date: string;
+  city: string;
+  location: string;
+  image?: string;
+  maxParticipants?: number;
+  participantsCount?: number;
+  hasGame: boolean;
+  gameName?: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type CreateEventPayload = {
+  title: string;
+  description?: string;
+  service: string;
+  projectId: string;
+  status: EventStatus;
+  date: string;
+  city: string;
+  location: string;
+  image?: string;
+  maxParticipants?: number;
+  hasGame: boolean;
+  gameName?: string;
+};
+
+export type UpdateEventPayload = Partial<CreateEventPayload>;
+
 export type PublicEvent = {
   _id: string;
+  title: string;
   name: string;
+  projectId?: string;
+  projectName?: string;
   date: string;
+  service?: string;
   type?: string;
+  city?: string;
+  location?: string;
+  status?: EventStatus;
+  participantsCount?: number;
 };
 
 type ParticipatePayload = {
@@ -13,6 +61,127 @@ type ParticipatePayload = {
 type ApiError = Error & {
   status?: number;
 };
+
+type EventsListResponse = {
+  events?: EventItem[];
+  data?: EventItem[];
+};
+
+type EventItemResponse = {
+  event?: EventItem;
+  data?: EventItem;
+};
+
+function normalizeEvent(raw: unknown): EventItem {
+  const maybe = (raw || {}) as Partial<EventItem> & {
+    name?: string;
+    type?: string;
+    project?: { _id?: string };
+  };
+
+  return {
+    _id: maybe._id || "",
+    title: maybe.title || maybe.name || "",
+    description: maybe.description || "",
+    service: maybe.service || maybe.type || "",
+    projectId:
+      (typeof maybe.projectId === "string" ? maybe.projectId : undefined) ||
+      maybe.project?._id ||
+      "",
+    status: (maybe.status as EventStatus) || "planned",
+    date: maybe.date || "",
+    city: maybe.city || "",
+    location: maybe.location || "",
+    image: maybe.image,
+    maxParticipants: maybe.maxParticipants,
+    participantsCount: maybe.participantsCount,
+    hasGame: Boolean(maybe.hasGame),
+    gameName: maybe.gameName,
+    createdAt: maybe.createdAt,
+    updatedAt: maybe.updatedAt,
+  };
+}
+
+function extractEvents(data: unknown): EventItem[] {
+  if (Array.isArray(data)) {
+    return data.map(normalizeEvent);
+  }
+
+  if (!data || typeof data !== "object") {
+    return [];
+  }
+
+  const maybe = data as EventsListResponse;
+  if (Array.isArray(maybe.events)) {
+    return maybe.events.map(normalizeEvent);
+  }
+  if (Array.isArray(maybe.data)) {
+    return maybe.data.map(normalizeEvent);
+  }
+
+  return [];
+}
+
+function extractEvent(data: unknown): EventItem {
+  if (data && typeof data === "object" && "_id" in data) {
+    return normalizeEvent(data);
+  }
+
+  const maybe = (data || {}) as EventItemResponse;
+  if (maybe.event) {
+    return normalizeEvent(maybe.event);
+  }
+  if (maybe.data) {
+    return normalizeEvent(maybe.data);
+  }
+
+  throw new Error("Invalid event response");
+}
+
+function mapToPublicEvent(event: EventItem): PublicEvent {
+  return {
+    _id: event._id,
+    title: event.title,
+    name: event.title,
+    projectId: event.projectId,
+    date: event.date,
+    service: event.service,
+    type: event.service,
+    city: event.city,
+    location: event.location,
+    status: event.status,
+    participantsCount: event.participantsCount,
+  };
+}
+
+export async function getEvents(): Promise<EventItem[]> {
+  const res = await api.get("/events");
+  return extractEvents(res.data);
+}
+
+export async function getEventsByProjectId(projectId: string): Promise<EventItem[]> {
+  const events = await getEvents();
+  return events.filter((event) => event.projectId === projectId);
+}
+
+export async function getEventById(eventId: string): Promise<EventItem> {
+  const res = await api.get(`/events/${eventId}`);
+  return extractEvent(res.data);
+}
+
+export async function createEvent(payload: CreateEventPayload): Promise<EventItem> {
+  const res = await api.post("/events", payload);
+  return extractEvent(res.data);
+}
+
+export async function updateEvent(eventId: string, payload: UpdateEventPayload): Promise<EventItem> {
+  const res = await api.patch(`/events/${eventId}`, payload);
+  return extractEvent(res.data);
+}
+
+export async function deleteEvent(eventId: string): Promise<void> {
+  await api.delete(`/events/${eventId}`);
+}
 
 export async function fetchPublicEvents(): Promise<PublicEvent[]> {
   const baseUrl =
@@ -25,7 +194,7 @@ export async function fetchPublicEvents(): Promise<PublicEvent[]> {
   }
 
   const data: unknown = await response.json();
-  return Array.isArray(data) ? (data as PublicEvent[]) : [];
+  return extractEvents(data).map(mapToPublicEvent);
 }
 
 export async function fetchEventParticipantsCount(eventId: string): Promise<number> {
@@ -38,8 +207,18 @@ export async function fetchEventParticipantsCount(eventId: string): Promise<numb
     throw new Error("Failed to fetch participants count");
   }
 
-  const data = (await response.json()) as { participantsCount?: number };
-  return typeof data.participantsCount === "number" ? data.participantsCount : 0;
+  const data = (await response.json()) as {
+    participantsCount?: number;
+    data?: { participantsCount?: number };
+  };
+  if (typeof data.participantsCount === "number") {
+    return data.participantsCount;
+  }
+  if (typeof data.data?.participantsCount === "number") {
+    return data.data.participantsCount;
+  }
+
+  return 0;
 }
 
 export async function fetchParticipantsCountByEventIds(

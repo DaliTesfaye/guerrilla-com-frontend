@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { BriefcaseBusiness } from "lucide-react";
 import { fetchServices, type ServiceItem } from "@/features/services/api/services";
 import ServicesCardsGrid from "@/features/services/components/ServicesCardsGrid";
 
@@ -33,7 +34,10 @@ export default function ServicesPage() {
   return (
     <section className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Services</h1>
+        <h1 className="flex items-center gap-2 text-2xl font-semibold text-gray-900">
+          <BriefcaseBusiness size={22} className="text-[#2E3191]" />
+          Services
+        </h1>
         <p className="mt-1 text-sm text-gray-500">
           Les services disponibles depuis le backend.
         </p>

@@ -1,34 +1,34 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createEvent, type CreateEventPayload } from "@/features/events/api/events";
-import { getDashboardProjects, type DashboardProject } from "@/features/projects/api/projects";
+import { createEvent } from "@/features/events/api/events";
 import { fetchServices, type ServiceItem } from "@/features/services/api/services";
 import { createEventV2Schema, type CreateEventV2FormData } from "@/lib/validation";
 import { useAuthStore } from "@/store/authStore";
 
 const statusOptions = ["draft", "planned", "ongoing", "completed"] as const;
 
-export default function CreateEventPage() {
+export default function CreateProjectEventPage() {
   const router = useRouter();
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [projects, setProjects] = useState<DashboardProject[]>([]);
-  const [services, setServices] = useState<ServiceItem[]>([]);
-  const [loadingOptions, setLoadingOptions] = useState(true);
+  const params = useParams();
+  const projectId = (params.projectId || params.id) as string;
   const user = useAuthStore((state) => state.user);
   const canManage = !!user && (user.role === "admin" || user.role === "super_admin");
   const accessDenied = !!user && !canManage;
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [services, setServices] = useState<ServiceItem[]>([]);
+  const [loadingOptions, setLoadingOptions] = useState(true);
 
   useEffect(() => {
     if (user && !canManage) {
-      router.replace("/dashboard/events");
+      router.replace(`/dashboard/projects/${projectId}`);
     }
-  }, [canManage, router, user]);
+  }, [canManage, projectId, router, user]);
 
   const {
     register,
@@ -41,7 +41,7 @@ export default function CreateEventPage() {
       title: "",
       description: "",
       service: "",
-      projectId: "",
+      projectId,
       status: "planned",
       date: "",
       city: "",
@@ -56,27 +56,23 @@ export default function CreateEventPage() {
   const hasGame = watch("hasGame");
 
   useEffect(() => {
-    const loadOptions = async () => {
+    const loadServices = async () => {
       setError("");
       try {
-        const [projectsList, servicesList] = await Promise.all([
-          getDashboardProjects(),
-          fetchServices(),
-        ]);
-        setProjects(projectsList);
+        const servicesList = await fetchServices();
         setServices(servicesList);
       } catch (err: unknown) {
         if (axios.isAxiosError(err)) {
-          setError(err.response?.data?.message || "Impossible de charger les options.");
+          setError(err.response?.data?.message || "Impossible de charger les services.");
         } else {
-          setError("Impossible de charger les options.");
+          setError("Impossible de charger les services.");
         }
       } finally {
         setLoadingOptions(false);
       }
     };
 
-    loadOptions();
+    loadServices();
   }, []);
 
   const onSubmit = async (data: CreateEventV2FormData) => {
@@ -84,11 +80,11 @@ export default function CreateEventPage() {
     setSuccess("");
 
     try {
-      const payload: CreateEventPayload = {
+      await createEvent({
         title: data.title.trim(),
         description: data.description?.trim() || "",
         service: data.service.trim(),
-        projectId: data.projectId.trim(),
+        projectId,
         status: data.status,
         date: data.date,
         city: data.city.trim(),
@@ -97,13 +93,11 @@ export default function CreateEventPage() {
         maxParticipants: data.maxParticipants,
         hasGame: data.hasGame,
         gameName: data.gameName?.trim() || undefined,
-      };
+      });
 
-      await createEvent(payload);
       setSuccess("Evenement cree avec succes. Redirection...");
-
       setTimeout(() => {
-        router.push("/dashboard/events");
+        router.push(`/dashboard/projects/${projectId}`);
       }, 900);
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
@@ -122,7 +116,9 @@ export default function CreateEventPage() {
     <section className="max-w-3xl space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">Creer un Evenement</h1>
-        <p className="mt-1 text-sm text-gray-500">Ajoutez un nouvel evenement a la plateforme.</p>
+        <p className="mt-1 text-sm text-gray-500">
+          L&apos;evenement sera automatiquement lie a ce projet.
+        </p>
       </div>
 
       {error && (
@@ -149,7 +145,6 @@ export default function CreateEventPage() {
               <input
                 id="title"
                 type="text"
-                placeholder="Ex: Promotion Carrefour"
                 {...register("title")}
                 className="w-full h-11 rounded-lg border border-gray-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E3191]"
               />
@@ -165,7 +160,6 @@ export default function CreateEventPage() {
               <textarea
                 id="description"
                 rows={4}
-                placeholder="Description de l'evenement"
                 {...register("description")}
                 className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E3191]"
               />
@@ -197,29 +191,6 @@ export default function CreateEventPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label htmlFor="projectId" className="text-sm font-medium text-gray-700">
-                  Projet
-                </label>
-                <select
-                  id="projectId"
-                  {...register("projectId")}
-                  className="w-full h-11 rounded-lg border border-gray-200 px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#2E3191]"
-                >
-                  <option value="">Select project</option>
-                  {projects.map((project) => (
-                    <option key={project._id} value={project._id}>
-                      {project.name}
-                    </option>
-                  ))}
-                </select>
-                {errors.projectId?.message && (
-                  <p className="text-xs text-[#C7072C]">{errors.projectId.message}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="grid gap-5 md:grid-cols-2">
-              <div className="space-y-1.5">
                 <label htmlFor="status" className="text-sm font-medium text-gray-700">
                   Statut
                 </label>
@@ -238,7 +209,9 @@ export default function CreateEventPage() {
                   <p className="text-xs text-[#C7072C]">{errors.status.message}</p>
                 )}
               </div>
+            </div>
 
+            <div className="grid gap-5 md:grid-cols-2">
               <div className="space-y-1.5">
                 <label htmlFor="date" className="text-sm font-medium text-gray-700">
                   Date
@@ -253,9 +226,7 @@ export default function CreateEventPage() {
                   <p className="text-xs text-[#C7072C]">{errors.date.message}</p>
                 )}
               </div>
-            </div>
 
-            <div className="grid gap-5 md:grid-cols-2">
               <div className="space-y-1.5">
                 <label htmlFor="city" className="text-sm font-medium text-gray-700">
                   Ville
@@ -270,7 +241,9 @@ export default function CreateEventPage() {
                   <p className="text-xs text-[#C7072C]">{errors.city.message}</p>
                 )}
               </div>
+            </div>
 
+            <div className="grid gap-5 md:grid-cols-2">
               <div className="space-y-1.5">
                 <label htmlFor="location" className="text-sm font-medium text-gray-700">
                   Lieu
@@ -285,9 +258,7 @@ export default function CreateEventPage() {
                   <p className="text-xs text-[#C7072C]">{errors.location.message}</p>
                 )}
               </div>
-            </div>
 
-            <div className="grid gap-5 md:grid-cols-2">
               <div className="space-y-1.5">
                 <label htmlFor="image" className="text-sm font-medium text-gray-700">
                   Image URL (optionnel)
@@ -295,7 +266,6 @@ export default function CreateEventPage() {
                 <input
                   id="image"
                   type="url"
-                  placeholder="https://example.com/event.jpg"
                   {...register("image", {
                     setValueAs: (value: string) =>
                       typeof value === "string" && value.trim() === "" ? undefined : value.trim(),
@@ -306,7 +276,9 @@ export default function CreateEventPage() {
                   <p className="text-xs text-[#C7072C]">{errors.image.message}</p>
                 )}
               </div>
+            </div>
 
+            <div className="grid gap-5 md:grid-cols-2">
               <div className="space-y-1.5">
                 <label htmlFor="maxParticipants" className="text-sm font-medium text-gray-700">
                   Max participants (optionnel)
@@ -328,35 +300,34 @@ export default function CreateEventPage() {
                   <p className="text-xs text-[#C7072C]">{errors.maxParticipants.message}</p>
                 )}
               </div>
-            </div>
 
-            <div className="space-y-3 rounded-xl border border-gray-100 bg-gray-50 p-4">
-              <label className="flex items-center gap-3 text-sm font-medium text-gray-700">
-                <input
-                  type="checkbox"
-                  {...register("hasGame")}
-                  className="h-4 w-4 rounded border-gray-300 text-[#2E3191] focus:ring-[#2E3191]"
-                />
-                Activer le jeu
-              </label>
-
-              {hasGame && (
-                <div className="space-y-1.5">
-                  <label htmlFor="gameName" className="text-sm font-medium text-gray-700">
-                    Nom du jeu
-                  </label>
+              <div className="space-y-3 rounded-xl border border-gray-100 bg-gray-50 p-4">
+                <label className="flex items-center gap-3 text-sm font-medium text-gray-700">
                   <input
-                    id="gameName"
-                    type="text"
-                    placeholder="Ex: Jeu de roue"
-                    {...register("gameName")}
-                    className="w-full h-11 rounded-lg border border-gray-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E3191]"
+                    type="checkbox"
+                    {...register("hasGame")}
+                    className="h-4 w-4 rounded border-gray-300 text-[#2E3191] focus:ring-[#2E3191]"
                   />
-                  {errors.gameName?.message && (
-                    <p className="text-xs text-[#C7072C]">{errors.gameName.message}</p>
-                  )}
-                </div>
-              )}
+                  Activer le jeu
+                </label>
+
+                {hasGame && (
+                  <div className="space-y-1.5">
+                    <label htmlFor="gameName" className="text-sm font-medium text-gray-700">
+                      Nom du jeu
+                    </label>
+                    <input
+                      id="gameName"
+                      type="text"
+                      {...register("gameName")}
+                      className="w-full h-11 rounded-lg border border-gray-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E3191]"
+                    />
+                    {errors.gameName?.message && (
+                      <p className="text-xs text-[#C7072C]">{errors.gameName.message}</p>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="flex items-center gap-3 pt-2">
@@ -370,10 +341,10 @@ export default function CreateEventPage() {
 
               <button
                 type="button"
-                onClick={() => router.push("/dashboard/events")}
+                onClick={() => router.push(`/dashboard/projects/${projectId}`)}
                 className="inline-flex items-center rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
               >
-                Retour a la liste
+                Retour au projet
               </button>
             </div>
           </form>

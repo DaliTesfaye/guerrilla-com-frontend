@@ -8,6 +8,7 @@ import {
   participateInEvent,
   type PublicEvent,
 } from "@/features/events/api/events";
+import { fetchPublicProjects } from "@/features/projects/api/projects";
 
 const eventMeta = [
   "Activation marque",
@@ -31,12 +32,19 @@ export default function EventsSection() {
   const [participantsCountByEvent, setParticipantsCountByEvent] = useState<
     Record<string, number>
   >({});
+  const [projectNameById, setProjectNameById] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const loadEvents = async () => {
       try {
-        const data = await fetchPublicEvents();
+        const [data, projects] = await Promise.all([fetchPublicEvents(), fetchPublicProjects()]);
         setEvents(data);
+        setProjectNameById(
+          projects.reduce<Record<string, string>>((acc, project) => {
+            acc[project._id] = project.name;
+            return acc;
+          }, {})
+        );
 
         const countsEntries = await Promise.all(
           data.map(async (event) => {
@@ -201,11 +209,15 @@ export default function EventsSection() {
                         <div className="p-5">
                           <div className="flex flex-wrap items-center gap-2">
                             <span className="inline-block rounded-md bg-brand-primary/8 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-brand-primary">
-                            {event.type?.trim() ? event.type : "N/A"}
+                              {event.type?.trim() ? event.type : "N/A"}
                             </span>
                             <span className="inline-flex items-center gap-1 rounded-md border border-brand-danger/20 bg-brand-danger/8 px-2.5 py-1 text-[11px] font-semibold text-brand-danger">
                               <CalendarDays size={12} className="shrink-0" />
                               {new Date(event.date).toLocaleDateString("fr-FR")}
+                            </span>
+                            <span className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-600">
+                              <Tag size={12} className="shrink-0" />
+                              {projectNameById[event.projectId || ""] || "Projet"}
                             </span>
                           </div>
 

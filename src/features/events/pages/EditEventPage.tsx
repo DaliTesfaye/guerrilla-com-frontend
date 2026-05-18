@@ -1,42 +1,40 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createEvent, type CreateEventPayload } from "@/features/events/api/events";
+import { getEventById, updateEvent, type EventItem } from "@/features/events/api/events";
 import { getDashboardProjects, type DashboardProject } from "@/features/projects/api/projects";
 import { fetchServices, type ServiceItem } from "@/features/services/api/services";
-import { createEventV2Schema, type CreateEventV2FormData } from "@/lib/validation";
+import { updateEventV2Schema, type UpdateEventV2FormData } from "@/lib/validation";
 import { useAuthStore } from "@/store/authStore";
 
 const statusOptions = ["draft", "planned", "ongoing", "completed"] as const;
 
-export default function CreateEventPage() {
+export default function EditEventPage() {
   const router = useRouter();
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [projects, setProjects] = useState<DashboardProject[]>([]);
-  const [services, setServices] = useState<ServiceItem[]>([]);
-  const [loadingOptions, setLoadingOptions] = useState(true);
+  const params = useParams();
+  const eventId = params.id as string;
   const user = useAuthStore((state) => state.user);
   const canManage = !!user && (user.role === "admin" || user.role === "super_admin");
-  const accessDenied = !!user && !canManage;
-
-  useEffect(() => {
-    if (user && !canManage) {
-      router.replace("/dashboard/events");
-    }
-  }, [canManage, router, user]);
+  const [event, setEvent] = useState<EventItem | null>(null);
+  const [projects, setProjects] = useState<DashboardProject[]>([]);
+  const [services, setServices] = useState<ServiceItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingOptions, setLoadingOptions] = useState(true);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const {
     register,
     handleSubmit,
     watch,
+    reset,
     formState: { errors, isSubmitting },
-  } = useForm<CreateEventV2FormData>({
-    resolver: zodResolver(createEventV2Schema),
+  } = useForm<UpdateEventV2FormData>({
+    resolver: zodResolver(updateEventV2Schema),
     defaultValues: {
       title: "",
       description: "",
@@ -56,73 +54,104 @@ export default function CreateEventPage() {
   const hasGame = watch("hasGame");
 
   useEffect(() => {
-    const loadOptions = async () => {
+    if (user && !canManage) {
+      router.replace("/dashboard/events");
+    }
+  }, [canManage, router, user]);
+
+  useEffect(() => {
+    const loadData = async () => {
       setError("");
       try {
-        const [projectsList, servicesList] = await Promise.all([
+        const [eventData, projectsList, servicesList] = await Promise.all([
+          getEventById(eventId),
           getDashboardProjects(),
           fetchServices(),
         ]);
+
+        setEvent(eventData);
         setProjects(projectsList);
         setServices(servicesList);
+
+        reset({
+          title: eventData.title,
+          description: eventData.description || "",
+          service: eventData.service,
+          projectId: eventData.projectId,
+          status: eventData.status,
+          date: eventData.date ? eventData.date.slice(0, 10) : "",
+          city: eventData.city,
+          location: eventData.location,
+          image: eventData.image || "",
+          maxParticipants: eventData.maxParticipants,
+          hasGame: eventData.hasGame,
+          gameName: eventData.gameName || "",
+        });
       } catch (err: unknown) {
         if (axios.isAxiosError(err)) {
-          setError(err.response?.data?.message || "Impossible de charger les options.");
+          setError(err.response?.data?.message || "Impossible de charger l'evenement.");
         } else {
-          setError("Impossible de charger les options.");
+          setError("Impossible de charger l'evenement.");
         }
       } finally {
+        setLoading(false);
         setLoadingOptions(false);
       }
     };
 
-    loadOptions();
-  }, []);
+    loadData();
+  }, [eventId, reset]);
 
-  const onSubmit = async (data: CreateEventV2FormData) => {
+  if (user && !canManage) {
+    return <div className="text-sm text-gray-500">Acces non autorise.</div>;
+  }
+
+  const onSubmit = async (data: UpdateEventV2FormData) => {
     setError("");
     setSuccess("");
 
     try {
-      const payload: CreateEventPayload = {
-        title: data.title.trim(),
-        description: data.description?.trim() || "",
-        service: data.service.trim(),
-        projectId: data.projectId.trim(),
+      await updateEvent(eventId, {
+        title: data.title?.trim(),
+        description: data.description?.trim(),
+        service: data.service?.trim(),
+        projectId: data.projectId?.trim(),
         status: data.status,
         date: data.date,
-        city: data.city.trim(),
-        location: data.location.trim(),
+        city: data.city?.trim(),
+        location: data.location?.trim(),
         image: data.image?.trim() || undefined,
         maxParticipants: data.maxParticipants,
         hasGame: data.hasGame,
         gameName: data.gameName?.trim() || undefined,
-      };
+      });
 
-      await createEvent(payload);
-      setSuccess("Evenement cree avec succes. Redirection...");
-
+      setSuccess("Evenement modifie avec succes. Redirection...");
       setTimeout(() => {
-        router.push("/dashboard/events");
+        router.push(`/dashboard/events/${eventId}`);
       }, 900);
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.message || "Creation impossible.");
+        setError(err.response?.data?.message || "Modification impossible.");
       } else {
-        setError("Creation impossible.");
+        setError("Modification impossible.");
       }
     }
   };
 
-  if (accessDenied) {
-    return <div className="text-sm text-gray-500">Acces non autorise.</div>;
+  if (loading) {
+    return <div className="text-sm text-gray-500">Chargement de l&apos;evenement...</div>;
+  }
+
+  if (!event) {
+    return <div className="text-sm text-[#C7072C]">Evenement non trouve.</div>;
   }
 
   return (
     <section className="max-w-3xl space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Creer un Evenement</h1>
-        <p className="mt-1 text-sm text-gray-500">Ajoutez un nouvel evenement a la plateforme.</p>
+        <h1 className="text-2xl font-semibold text-gray-900">Modifier l&apos;evenement</h1>
+        <p className="mt-1 text-sm text-gray-500">Mettez a jour les informations de l&apos;evenement.</p>
       </div>
 
       {error && (
@@ -149,7 +178,6 @@ export default function CreateEventPage() {
               <input
                 id="title"
                 type="text"
-                placeholder="Ex: Promotion Carrefour"
                 {...register("title")}
                 className="w-full h-11 rounded-lg border border-gray-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E3191]"
               />
@@ -165,7 +193,6 @@ export default function CreateEventPage() {
               <textarea
                 id="description"
                 rows={4}
-                placeholder="Description de l'evenement"
                 {...register("description")}
                 className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E3191]"
               />
@@ -295,7 +322,6 @@ export default function CreateEventPage() {
                 <input
                   id="image"
                   type="url"
-                  placeholder="https://example.com/event.jpg"
                   {...register("image", {
                     setValueAs: (value: string) =>
                       typeof value === "string" && value.trim() === "" ? undefined : value.trim(),
@@ -348,7 +374,6 @@ export default function CreateEventPage() {
                   <input
                     id="gameName"
                     type="text"
-                    placeholder="Ex: Jeu de roue"
                     {...register("gameName")}
                     className="w-full h-11 rounded-lg border border-gray-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E3191]"
                   />
@@ -365,15 +390,15 @@ export default function CreateEventPage() {
                 disabled={isSubmitting}
                 className="inline-flex items-center rounded-lg bg-[#2E3191] px-4 py-2 text-sm font-medium text-white hover:bg-[#1e2266] transition disabled:opacity-70"
               >
-                {isSubmitting ? "Creation..." : "Creer l'evenement"}
+                {isSubmitting ? "Mise a jour..." : "Enregistrer les modifications"}
               </button>
 
               <button
                 type="button"
-                onClick={() => router.push("/dashboard/events")}
+                onClick={() => router.push(`/dashboard/events/${eventId}`)}
                 className="inline-flex items-center rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
               >
-                Retour a la liste
+                Annuler
               </button>
             </div>
           </form>

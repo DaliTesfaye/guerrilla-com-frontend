@@ -1,54 +1,70 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { CalendarDays } from "lucide-react";
 import axios from "axios";
-import api from "@/lib/api";
+import { deleteEvent, getEvents, type EventItem } from "@/features/events/api/events";
 import { fetchParticipantsCountByEventIds } from "@/features/events/api/events";
-
-type EventItem = {
-  _id: string;
-  name: string;
-  date: string;
-  type?: string;
-  createdAt?: string;
-  updatedAt?: string;
-};
+import EventCard from "@/features/events/components/EventCard";
+import { useAuthStore } from "@/store/authStore";
 
 export default function EventsPage() {
   const [events, setEvents] = useState<EventItem[]>([]);
-  const [participantsCountByEvent, setParticipantsCountByEvent] = useState<
-    Record<string, number>
-  >({});
+  const [participantsCountByEvent, setParticipantsCountByEvent] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const user = useAuthStore((state) => state.user);
+  const canManage = !!user && (user.role === "admin" || user.role === "super_admin");
+
+  const fetchEvents = useCallback(async () => {
+    setError("");
+    try {
+      const eventList = await getEvents();
+      setEvents(eventList);
+
+      const participantsMap = await fetchParticipantsCountByEventIds(
+        eventList.map((event) => event._id)
+      );
+      setParticipantsCountByEvent(participantsMap);
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || "Impossible de charger les evenements.");
+      } else {
+        setError("Impossible de charger les evenements.");
+      }
+      setParticipantsCountByEvent({});
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      setError("");
-      try {
-        const res = await api.get("/events");
-        const eventList = Array.isArray(res.data) ? (res.data as EventItem[]) : [];
-        setEvents(eventList);
-
-        const participantsMap = await fetchParticipantsCountByEventIds(
-          eventList.map((event) => event._id)
-        );
-        setParticipantsCountByEvent(participantsMap);
-      } catch (err: unknown) {
-        if (axios.isAxiosError(err)) {
-          setError(err.response?.data?.message || "Impossible de charger les evenements.");
-        } else {
-          setError("Impossible de charger les evenements.");
-        }
-        setParticipantsCountByEvent({});
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchEvents();
-  }, []);
+  }, [fetchEvents]);
+
+  const handleDelete = async (eventId: string) => {
+    const shouldDelete = window.confirm("Voulez-vous vraiment supprimer cet evenement ?");
+    if (!shouldDelete) {
+      return;
+    }
+
+    setDeletingId(eventId);
+    setError("");
+    try {
+      await deleteEvent(eventId);
+      await fetchEvents();
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || "Suppression impossible.");
+      } else {
+        setError("Suppression impossible.");
+      }
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   if (loading) {
     return <div className="text-sm text-gray-500">Chargement des evenements...</div>;
@@ -58,16 +74,21 @@ export default function EventsPage() {
     <section className="space-y-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Evenements</h1>
-          <p className="text-sm text-gray-500 mt-1">Liste des evenements de la plateforme</p>
+          <h1 className="flex items-center gap-2 text-2xl font-semibold text-gray-900">
+            <CalendarDays size={22} className="text-[#2E3191]" />
+            Evenements
+          </h1>
+          <p className="mt-1 text-sm text-gray-500">Liste des evenements de la plateforme</p>
         </div>
 
-        <Link
-          href="/dashboard/events/create"
-          className="inline-flex items-center rounded-lg bg-[#2E3191] px-4 py-2 text-sm font-medium text-white hover:bg-[#1e2266] transition"
-        >
-          + Add Event
-        </Link>
+        {canManage && (
+          <Link
+            href="/dashboard/events/create"
+            className="inline-flex items-center rounded-lg bg-[#2E3191] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#1e2266]"
+          >
+            + Add Event
+          </Link>
+        )}
       </div>
 
       {error && (
@@ -81,35 +102,20 @@ export default function EventsPage() {
           Aucun evenement trouve.
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {events.map((event) => (
-            <article
+            <EventCard
               key={event._id}
-              className="rounded-xl border border-gray-200 bg-white px-4 py-4 shadow-sm transition hover:border-[#2E3191]/25 hover:shadow-md"
-            >
-              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <div className="min-w-0">
-                  <p className="text-base font-semibold text-gray-900 truncate">{event.name}</p>
-                  <p className="mt-1 text-xs text-gray-600">
-                    👥 {participantsCountByEvent[event._id] ?? 0} participants
-                  </p>
-                  {event.createdAt && (
-                    <p className="mt-1 text-xs text-gray-500">
-                      Cree le {new Date(event.createdAt).toLocaleDateString("fr-FR")}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2 md:gap-3">
-                  <span className="rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700">
-                    {new Date(event.date).toLocaleDateString("fr-FR")}
-                  </span>
-                  <span className="rounded-full bg-[#e9ebff] px-2.5 py-1 text-xs font-medium text-[#2E3191]">
-                    {event.type?.trim() ? event.type : "N/A"}
-                  </span>
-                </div>
-              </div>
-            </article>
+              event={{
+                ...event,
+                participantsCount: event.participantsCount ?? participantsCountByEvent[event._id] ?? 0,
+              }}
+              canManage={canManage}
+              detailsHref={`/dashboard/events/${event._id}`}
+              editHref={`/dashboard/events/${event._id}/edit`}
+              onDelete={() => handleDelete(event._id)}
+              deleting={deletingId === event._id}
+            />
           ))}
         </div>
       )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { UserCircle2 } from "lucide-react";
 import axios from "axios";
 import { useForm } from "react-hook-form";
 import { useAuthStore } from "@/store/authStore";
@@ -245,7 +246,10 @@ export default function ProfilePage() {
       )}
 
       <div className="text-center">
-        <h1 className="text-2xl font-semibold text-gray-900">Mon profil</h1>
+        <h1 className="flex items-center justify-center gap-2 text-2xl font-semibold text-gray-900">
+          <UserCircle2 size={22} className="text-[#2E3191]" />
+          Mon profil
+        </h1>
         <p className="text-sm text-gray-500 mt-1">
           Consultez vos informations puis editez-les depuis un seul formulaire.
         </p>
