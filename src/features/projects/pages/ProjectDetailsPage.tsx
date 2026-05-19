@@ -10,6 +10,7 @@ import {
   type DashboardProject,
 } from "@/features/projects/api/projects";
 import { getEventsByProjectId, type EventItem } from "@/features/events/api/events";
+import { getInvoicesByProjectId, type InvoiceItem } from "@/features/invoices/api/invoices";
 import EventCard from "@/features/events/components/EventCard";
 import { useAuthStore } from "@/store/authStore";
 
@@ -22,6 +23,7 @@ export default function ProjectDetailsPage() {
 
   const [project, setProject] = useState<DashboardProject | null>(null);
   const [events, setEvents] = useState<EventItem[]>([]);
+  const [invoices, setInvoices] = useState<InvoiceItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [deleting, setDeleting] = useState(false);
@@ -34,9 +36,11 @@ export default function ProjectDetailsPage() {
           getDashboardProjectDetails(projectId),
           getEventsByProjectId(projectId),
         ]);
+        const relatedInvoices = await getInvoicesByProjectId(projectId).catch(() => []);
 
         setProject(details.project);
         setEvents(relatedEvents);
+        setInvoices(relatedInvoices);
       } catch (err: unknown) {
         if (axios.isAxiosError(err)) {
           setError(err.response?.data?.message || "Impossible de charger le projet.");
@@ -62,6 +66,23 @@ export default function ProjectDetailsPage() {
           maximumFractionDigits: 0,
         }).format(value)
       : "—";
+
+  const formatAmount = (value: number) =>
+    new Intl.NumberFormat("fr-FR", {
+      style: "currency",
+      currency: "TND",
+      maximumFractionDigits: 2,
+    }).format(value || 0);
+
+  const invoiceStatusClass = (status?: InvoiceItem["status"]) => {
+    if (status === "paid") {
+      return "bg-emerald-50 text-emerald-700 border-emerald-200";
+    }
+    if (status === "sent") {
+      return "bg-[#e9ebff] text-[#2E3191] border-[#cfd4ff]";
+    }
+    return "bg-gray-100 text-gray-700 border-gray-200";
+  };
 
   const handleDelete = async () => {
     if (!project) {
@@ -195,6 +216,74 @@ export default function ProjectDetailsPage() {
                 detailsHref={`/dashboard/events/${event._id}`}
               />
             ))}
+          </div>
+        )}
+      </div>
+
+      <div className="rounded-2xl border border-gray-200 bg-white p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-gray-900">Related Invoices</h2>
+          {canManage && (
+            <Link
+              href={`/dashboard/projects/${project._id}/invoices/create`}
+              className="inline-flex items-center rounded-lg bg-[#2E3191] px-4 py-2 text-sm font-medium text-white hover:bg-[#1e2266] transition"
+            >
+              + Creer Facture
+            </Link>
+          )}
+        </div>
+
+        {invoices.length === 0 ? (
+          <p className="mt-5 text-sm text-gray-500">No invoices linked to this project yet.</p>
+        ) : (
+          <div className="mt-5 overflow-x-auto rounded-xl border border-gray-200">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    Number
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    Amount
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    Issue Date
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    Action
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 bg-white">
+                {invoices.map((invoice) => (
+                  <tr key={invoice._id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                      {invoice.invoiceNumber || "—"}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-700">{formatAmount(invoice.amount)}</td>
+                    <td className="px-4 py-3 text-sm text-gray-700">
+                      <span
+                        className={`rounded-full border px-2.5 py-1 text-xs font-medium ${invoiceStatusClass(invoice.status)}`}
+                      >
+                        {invoice.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-700">{formatDate(invoice.issueDate)}</td>
+                    <td className="px-4 py-3 text-sm text-gray-700">
+                      <Link
+                        href={`/dashboard/invoices/${invoice._id}`}
+                        className="font-medium text-[#2E3191] hover:underline"
+                      >
+                        Preview
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

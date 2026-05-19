@@ -9,6 +9,7 @@ const links = [
   { href: "/dashboard/profile", label: "Mon profil" },
   { href: "/dashboard/projects", label: "Projets" },
   { href: "/dashboard/events", label: "Evenements" },
+  { href: "/dashboard/invoices", label: "Factures" },
   { href: "/dashboard/participants", label: "Participants" },
   { href: "/dashboard/services", label: "Services" },
 ];
@@ -48,6 +49,7 @@ export default function Sidebar() {
             (link.href === "/dashboard/profile" && pathname.startsWith("/dashboard/profile")) ||
             (link.href === "/dashboard/projects" && pathname.startsWith("/dashboard/projects")) ||
             (link.href === "/dashboard/events" && pathname.startsWith("/dashboard/events")) ||
+            (link.href === "/dashboard/invoices" && pathname.startsWith("/dashboard/invoices")) ||
             (link.href === "/dashboard/participants" && pathname.startsWith("/dashboard/participants")) ||
             (link.href === "/dashboard/services" && pathname.startsWith("/dashboard/services"));
           return (

@@ -94,6 +94,7 @@ export const createEventSchema = z.object({
 export type CreateEventFormData = z.infer<typeof createEventSchema>;
 
 export const eventStatusSchema = z.enum(["draft", "planned", "ongoing", "completed"]);
+export const invoiceStatusSchema = z.enum(["draft", "sent", "paid"]);
 
 export const createEventV2Schema = z
   .object({
@@ -168,6 +169,80 @@ export const updateEventV2Schema = z
   );
 
 export type UpdateEventV2FormData = z.infer<typeof updateEventV2Schema>;
+
+export const createInvoiceSchema = z
+  .object({
+    invoiceNumber: z.string().trim().min(1, "Invoice number is required"),
+    projectId: z.string().trim().min(1, "Project is required"),
+    clientName: z.string().trim().min(1, "Client name is required"),
+    services: z.array(z.string().trim().min(1)).min(1, "Select at least one service").optional(),
+    amount: z.number().finite("Amount must be a number").min(0, "Amount must be greater than or equal to 0"),
+    issueDate: z.string().trim().min(1, "Issue date is required"),
+    dueDate: z.string().trim().optional(),
+    status: invoiceStatusSchema,
+    notes: z.string().trim().optional(),
+  })
+  .refine(
+    (data) => {
+      if (!data.dueDate?.trim()) {
+        return true;
+      }
+      return new Date(data.dueDate).getTime() >= new Date(data.issueDate).getTime();
+    },
+    {
+      message: "Due date must be after or equal to issue date",
+      path: ["dueDate"],
+    }
+  );
+
+export type CreateInvoiceFormData = z.infer<typeof createInvoiceSchema>;
+
+export const updateInvoiceSchema = z
+  .object({
+    invoiceNumber: z.string().trim().min(1, "Invoice number is required").optional(),
+    projectId: z.string().trim().min(1, "Project is required").optional(),
+    clientName: z.string().trim().min(1, "Client name is required").optional(),
+    services: z.array(z.string().trim().min(1)).min(1, "Select at least one service").optional(),
+    amount: z
+      .number()
+      .finite("Amount must be a number")
+      .min(0, "Amount must be greater than or equal to 0")
+      .optional(),
+    issueDate: z.string().trim().min(1, "Issue date is required").optional(),
+    dueDate: z.string().trim().optional(),
+    status: invoiceStatusSchema.optional(),
+    notes: z.string().trim().optional(),
+  })
+  .refine(
+    (data) => {
+      if (!data.issueDate || !data.dueDate?.trim()) {
+        return true;
+      }
+      return new Date(data.dueDate).getTime() >= new Date(data.issueDate).getTime();
+    },
+    {
+      message: "Due date must be after or equal to issue date",
+      path: ["dueDate"],
+    }
+  )
+  .refine(
+    (data) =>
+      data.invoiceNumber !== undefined ||
+      data.projectId !== undefined ||
+      data.clientName !== undefined ||
+      data.services !== undefined ||
+      data.amount !== undefined ||
+      data.issueDate !== undefined ||
+      data.dueDate !== undefined ||
+      data.status !== undefined ||
+      data.notes !== undefined,
+    {
+      message: "At least one field must be provided",
+      path: ["invoiceNumber"],
+    }
+  );
+
+export type UpdateInvoiceFormData = z.infer<typeof updateInvoiceSchema>;
 
 export const updateProfileSchema = z.object({
   name: z

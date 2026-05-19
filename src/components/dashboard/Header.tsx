@@ -11,6 +11,7 @@ const titles: Record<string, string> = {
   "/dashboard/projects/create": "Creer un Projet",
   "/dashboard/events": "Gestion des Evenements",
   "/dashboard/events/create": "Creer un Evenement",
+  "/dashboard/invoices": "Gestion des Factures",
   "/dashboard/participants": "Gestion des Participants",
   "/dashboard/services": "Gestion des Services",
   "/dashboard/change-password": "Changer le mot de passe",
@@ -29,8 +30,20 @@ function resolveTitle(pathname: string): string {
     return "Creer un Evenement";
   }
 
+  if (/^\/dashboard\/projects\/[^/]+\/invoices\/create$/.test(pathname)) {
+    return "Creer une Facture";
+  }
+
+  if (/^\/dashboard\/invoices\/[^/]+\/edit$/.test(pathname)) {
+    return "Modifier une Facture";
+  }
+
   if (/^\/dashboard\/events\/[^/]+\/edit$/.test(pathname)) {
     return "Modifier un Evenement";
+  }
+
+  if (/^\/dashboard\/invoices\/[^/]+$/.test(pathname)) {
+    return "Details Facture";
   }
 
   if (/^\/dashboard\/events\/[^/]+$/.test(pathname)) {
