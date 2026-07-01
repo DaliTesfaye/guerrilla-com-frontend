@@ -183,6 +183,11 @@ export async function deleteEvent(eventId: string): Promise<void> {
   await api.delete(`/events/${eventId}`);
 }
 
+export async function sendReminders(eventId: string): Promise<{ success?: boolean; sent?: number; failed?: number; message?: string }> {
+  const res = await api.post(`/events/${eventId}/send-reminders`);
+  return res.data;
+}
+
 export async function fetchPublicEvents(): Promise<PublicEvent[]> {
   const baseUrl =
     process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ||

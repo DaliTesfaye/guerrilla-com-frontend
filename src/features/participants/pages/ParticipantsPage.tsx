@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { BriefcaseBusiness, CalendarRange, Users, UserRoundSearch } from "lucide-react";
 import axios from "axios";
 import { getDashboardProjects, type DashboardProject } from "@/features/projects/api/projects";
-import { getEvents, type EventItem } from "@/features/events/api/events";
+import { getEvents, sendReminders, type EventItem } from "@/features/events/api/events";
 import {
   getDashboardParticipants,
   type DashboardParticipantItem,
@@ -69,6 +69,42 @@ export default function ParticipantsPage() {
     mostActiveProject: null,
   });
   const [projects, setProjects] = useState<DashboardProject[]>([]);
+  const [sendingReminders, setSendingReminders] = useState(false);
+  const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
+  const handleSendReminders = async () => {
+    if (!eventFilter) {
+      setToast({ type: "error", message: "Veuillez sélectionner un événement avant d'envoyer des rappels." });
+      return;
+    }
+
+    setSendingReminders(true);
+    // Immediate feedback so user sees the action registered
+    setToast({ type: "success", message: "Envoi des rappels en cours..." });
+
+    try {
+      console.debug("Sending reminders for eventId:", eventFilter);
+      const result = await sendReminders(eventFilter);
+      setToast({
+        type: "success",
+        message: `Rappels envoyés! Envoyés: ${result.sent ?? 0}, Échoués: ${result.failed ?? 0}`,
+      });
+    } catch (err: unknown) {
+      let message = "Impossible d'envoyer les rappels.";
+      if (axios.isAxiosError(err)) {
+        const status = err.response?.status;
+        if (status === 404) message = "Événement non trouvé. Veuillez recharger la page.";
+        else if (status === 401) message = "Vous n'êtes pas autorisé. Accès admin requis.";
+        else if (status === 500) message = "Erreur serveur. Veuillez réessayer plus tard.";
+        else message = err.response?.data?.message || err.message || message;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+      setToast({ type: "error", message });
+    } finally {
+      setSendingReminders(false);
+    }
+  };
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtersLoading, setFiltersLoading] = useState(true);
@@ -84,6 +120,12 @@ export default function ParticipantsPage() {
       router.replace("/dashboard/home");
     }
   }, [canManage, router, user]);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = window.setTimeout(() => setToast(null), 3500);
+    return () => window.clearTimeout(t);
+  }, [toast]);
 
   useEffect(() => {
     setProjectFilter(searchParams.get("projectId") || "");
@@ -189,15 +231,27 @@ export default function ParticipantsPage() {
 
   return (
     <section className="space-y-6">
+      {toast && (
+        <div className="fixed right-6 top-6 z-[80]">
+          <div
+            className={`rounded-lg border px-4 py-3 text-sm shadow-lg ${
+              toast.type === "success"
+                ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                : "border-red-200 bg-red-50 text-red-700"
+            }`}
+          >
+            {toast.message}
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-semibold text-gray-900">
             <Users size={22} className="text-[#2E3191]" />
             Participants
           </h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Vue centralisée des participations aux événements.
-          </p>
+          <p className="mt-1 text-sm text-gray-500">Vue centralisée des participations aux événements.</p>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-3 lg:w-[720px]">
@@ -280,6 +334,28 @@ export default function ParticipantsPage() {
           value={stats.mostActiveProject ? stats.mostActiveProject.projectName : "—"}
           icon={<BriefcaseBusiness size={16} />}
         />
+      </div>
+
+      <div className="px-5 py-4 flex items-center justify-between gap-3">
+        <p className="text-sm text-gray-700">
+          Événement sélectionné: <span className="font-medium">{eventFilter ? (eventOptions.find((e) => e._id === eventFilter)?.title ?? eventFilter) : "Aucun événement sélectionné"}</span>
+        </p>
+        {canManage && (
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={async (e) => {
+                e.stopPropagation();
+                await handleSendReminders();
+              }}
+              disabled={sendingReminders || !eventFilter}
+              className="inline-flex items-center gap-2 rounded-lg bg-[#2E3191] px-4 py-2 text-sm font-medium text-white hover:bg-[#1e2266] transition disabled:opacity-60"
+            >
+              {sendingReminders ? "Envoi des rappels..." : "📧 Envoyer les rappels"}
+            </button>
+            {sendingReminders && <span className="text-sm text-gray-600">Envoi en cours…</span>}
+          </div>
+        )}
       </div>
 
       <div className="rounded-2xl border border-gray-200 bg-white">

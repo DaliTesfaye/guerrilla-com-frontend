@@ -201,3 +201,21 @@ export async function fetchPublicProjects(): Promise<PublicProject[]> {
   const data: unknown = await response.json();
   return Array.isArray(data) ? (data as PublicProject[]) : [];
 }
+
+export async function fetchPublicProjectDetails(id: string): Promise<DashboardProjectDetails> {
+  const baseUrl =
+    process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ||
+    "http://localhost:5000/api";
+
+  const response = await fetch(`${baseUrl}/projects/${id}`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch project details");
+  }
+
+  const data: unknown = await response.json();
+  return {
+    project: extractProject(data),
+    relatedEvents: extractRelatedEvents(data),
+  };
+}

@@ -253,7 +253,7 @@ export default function EventsSection() {
       </div>
 
       {selectedEvent && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 px-4">
+        <div className="fixed inset-0 z-70 flex items-center justify-center bg-black/50 px-4">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
             <div className="flex items-start justify-between gap-3">
               <div>

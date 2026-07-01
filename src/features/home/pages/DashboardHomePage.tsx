@@ -1,7 +1,19 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, FolderKanban, Layers3 } from "lucide-react";
+import { CalendarDays, FolderKanban, Layers3, Users } from "lucide-react";
+import { Bar } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 import axios from "axios";
 import api from "@/lib/api";
 import { fetchParticipantsCountByEventIds, type EventItem } from "@/features/events/api/events";
@@ -63,6 +75,11 @@ export default function DashboardHomePage() {
   );
   const totalProjectsCount = useMemo(() => projects.length, [projects]);
 
+  const totalParticipantsCount = useMemo(
+    () => events.reduce((sum, ev) => sum + (participantsCountByEvent[ev._id] ?? 0), 0),
+    [events, participantsCountByEvent]
+  );
+
   const recentProjects = useMemo(
     () =>
       [...projects]
@@ -83,6 +100,72 @@ export default function DashboardHomePage() {
     [events]
   );
 
+  // Chart helpers: keep ticks integer and a light modern look
+  const activeEventsCount = useMemo(
+    () => events.filter((ev) => (ev.status || "").trim().toLowerCase() === "active").length,
+    [events]
+  );
+
+  const chartMax = Math.max(5, totalParticipantsCount, events.length, totalProjectsCount, activeEventsCount, activeProjectsCount);
+  const chartData = {
+    labels: ["Participants", "Événements", "Événements actifs", "Projets", "Projets actifs"],
+    datasets: [
+      {
+        label: "Nombre",
+        data: [totalParticipantsCount, events.length, activeEventsCount, totalProjectsCount, activeProjectsCount],
+        backgroundColor: [
+          "rgba(79,70,229,0.10)",
+          "rgba(6,182,212,0.10)",
+          "rgba(6,182,212,0.18)",
+          "rgba(16,185,129,0.10)",
+          "rgba(16,185,129,0.18)",
+        ],
+        borderColor: ["#4F46E5", "#06B6D4", "#06B6D4", "#10B981", "#10B981"],
+        borderWidth: 1,
+        borderRadius: 8,
+        barThickness: 18,
+        borderSkipped: false,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      y: {
+        beginAtZero: true,
+        // force integer ticks by using stepSize = 1 and set a sensible max
+        max: Math.max(chartMax, 5),
+        ticks: {
+          stepSize: 1,
+          // show integer ticks only
+          callback: (value: any) => String(Math.round(Number(value))),
+          color: "#6b7280",
+          padding: 8,
+        },
+        grid: {
+          color: "rgba(15,23,42,0.06)",
+          drawBorder: false,
+        },
+      },
+      x: {
+        grid: { display: false },
+        ticks: { color: "#6b7280" },
+      },
+    },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: function (context: any) {
+            return `${Math.round(context.parsed.y).toLocaleString()} `;
+          },
+        },
+      },
+    },
+  };
+
   if (loading) {
     return <div className="text-sm text-gray-500">Chargement du dashboard...</div>;
   }
@@ -95,7 +178,17 @@ export default function DashboardHomePage() {
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-4">
+        <article className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+          <div className="flex items-start justify-between gap-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Nombre de participants total</p>
+            <span className="rounded-lg bg-[#e9ebff] p-2 text-[#2E3191]">
+              <Users size={16} />
+            </span>
+          </div>
+          <p className="mt-2 text-3xl font-bold text-[#2E3191]">{totalParticipantsCount}</p>
+        </article>
+
         <article className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
           <div className="flex items-start justify-between gap-3">
             <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Tous les projets</p>
@@ -127,6 +220,13 @@ export default function DashboardHomePage() {
           </div>
           <p className="mt-2 text-3xl font-bold text-[#2E3191]">{activeProjectsCount}</p>
         </article>
+      </div>
+
+      <div className="mt-6 rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+        <h3 className="text-base font-semibold text-gray-900 mb-4">Résumé</h3>
+        <div className="h-64">
+          <Bar data={chartData} options={chartOptions as any} />
+        </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
