@@ -9,9 +9,9 @@ const navLinks = [
   { label: "SERVICES", sectionId: "services" },
   { label: "PROJETS", sectionId: "projects" },
   { label: "EVENEMENTS", sectionId: "events" },
+  { label: "ACTUALITÉ", sectionId: "actualite" },
   { label: "PROCEDURES", sectionId: "procedures" },
   { label: "PARTENAIRES", sectionId: "partenaires" },
-  { label: "CONTACT", sectionId: "contact" },
 ];
 
 export default function Navbar() {
@@ -26,26 +26,42 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Highlight active section based on scroll position
+  // 🔥 FIXED: Bulletproof position-sorted scroll spy loop
   useEffect(() => {
-    const sectionIds = navLinks.map((l) => l.sectionId);
+    const sectionIds = [...navLinks.map((l) => l.sectionId), "contact"];
 
     const onScroll = () => {
-      const scrollY = window.scrollY + 80; // offset for navbar height
+      const scrollY = window.scrollY + 120; // Comfort offset for navbar height + spacing
 
-      // Find the last section whose top is above the scroll position
-      let current = sectionIds[0];
-      for (const id of sectionIds) {
-        const el = document.getElementById(id);
-        if (el && el.offsetTop <= scrollY) {
-          current = id;
+      // 1. Map all sections to their real layout positions, filtering out any missing elements
+      const elements = sectionIds
+        .map((id) => {
+          const el = document.getElementById(id);
+          return el ? { id, top: el.offsetTop } : null;
+        })
+        .filter((item): item is { id: string; top: number } => item !== null);
+
+      // 2. Sort sections by their actual physical top coordinates from top to bottom
+      elements.sort((a, b) => a.top - b.top);
+
+      // 3. Find the current section occupying the viewport
+      let current = elements[0]?.id || "";
+      for (const el of elements) {
+        if (scrollY >= el.top) {
+          current = el.id;
         }
       }
-      setActiveSection(current);
+
+      // 4. Update the state (ignore 'contact' to keep the main menu clean when hitting the footer)
+      if (current === "contact") {
+        setActiveSection("");
+      } else {
+        setActiveSection(current);
+      }
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll(); // run once on mount
+    onScroll(); // Run immediately on mount
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
@@ -55,7 +71,6 @@ export default function Navbar() {
     if (!el) return;
     el.scrollIntoView({ behavior: "smooth" });
 
-    // Keep clean URL with no hash fragment after navigation.
     if (window.location.hash) {
       window.history.replaceState(null, "", window.location.pathname + window.location.search);
     }
@@ -108,8 +123,6 @@ export default function Navbar() {
           })}
         </nav>
 
-
-
         {/* CTA button — right */}
         <div className="hidden md:flex items-center">
           <button
@@ -118,7 +131,6 @@ export default function Navbar() {
           >
             <span className="absolute inset-0 bg-brand-danger translate-x-[-101%] group-hover:translate-x-0 transition-transform duration-300 ease-in-out" />
             <span className="relative z-10">Nous contacter</span>
-            
           </button>
         </div>
 

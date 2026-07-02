@@ -8,6 +8,7 @@ import PartenairesSection from "@/components/sections/PartenairesSection";
 import ProjectsSection from "@/components/sections/ProjectsSection";
 import ProceduresSection from "@/components/sections/ProceduresSection";
 import ServicesSection from "@/components/sections/ServicesSection";
+import FacebookFeed from "@/components/sections/Facebooksection";
 
 export default function Home() {
   return (
@@ -18,6 +19,7 @@ export default function Home() {
       <ServicesSection />
       <ProjectsSection />
       <EventsSection />
+      <FacebookFeed />
       <ProceduresSection />
       <PartenairesSection />
       <ContactSection />
