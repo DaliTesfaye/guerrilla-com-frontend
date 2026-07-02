@@ -9,6 +9,7 @@ import ProjectsSection from "@/components/sections/ProjectsSection";
 import ProceduresSection from "@/components/sections/ProceduresSection";
 import ServicesSection from "@/components/sections/ServicesSection";
 import FacebookFeed from "@/components/sections/Facebooksection";
+import Chatbot from "@/components/sections/Chatbot";
 
 export default function Home() {
   return (
@@ -23,6 +24,7 @@ export default function Home() {
       <ProceduresSection />
       <PartenairesSection />
       <ContactSection />
+      <Chatbot />
       <Footer />
     </main>
   );
