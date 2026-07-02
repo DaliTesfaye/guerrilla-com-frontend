@@ -164,7 +164,7 @@ export default function Chatbot() {
             Hey ! Comment ça va ? Comment puis-je vous aider aujourd'hui ? 😊
           </p>
 
-          <div className="absolute bottom-[-5px] right-6 w-2.5 h-2.5 bg-white border-r border-b border-gray-100 rotate-45" />
+          <div className="absolute -bottom-1.25 right-6 w-2.5 h-2.5 bg-white border-r border-b border-gray-100 rotate-45" />
         </div>
       )}
 
@@ -181,7 +181,7 @@ export default function Chatbot() {
 
       {/* 📦 Boîte de discussion active */}
       {isOpen && (
-        <div className="w-80 sm:w-96 h-[500px] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
+        <div className="w-80 sm:w-96 h-125 bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
           
           {/* Header */}
           <div className="bg-brand-primary p-4 text-white flex items-center justify-between shadow-md">
@@ -198,7 +198,7 @@ export default function Chatbot() {
           </div>
 
           {/* Zone des messages */}
-          <div className="flex-grow p-4 overflow-y-auto space-y-3 bg-gray-50">
+          <div className="grow p-4 overflow-y-auto space-y-3 bg-gray-50">
             {messages.map((msg) => (
               <div key={msg.id} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
                 <div
@@ -248,7 +248,7 @@ export default function Chatbot() {
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Écrivez votre message..."
               disabled={isTyping}
-              className="flex-grow bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-xl px-4 py-2 focus:outline-none focus:border-brand-primary focus:bg-white transition disabled:opacity-60"
+              className="grow bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-xl px-4 py-2 focus:outline-none focus:border-brand-primary focus:bg-white transition disabled:opacity-60"
             />
             <button
               type="submit"
