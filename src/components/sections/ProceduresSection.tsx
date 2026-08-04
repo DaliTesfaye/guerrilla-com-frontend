@@ -1,5 +1,7 @@
 "use client";
+
 import { Fragment } from "react";
+import Image from "next/image";
 import {
   ClipboardList,
   Lightbulb,
@@ -57,15 +59,28 @@ export default function ProceduresSection() {
   const bottomRow = [procedures[5], procedures[4], procedures[3]];
 
   return (
-    <section id="procedures" className="bg-brand-surface px-6 py-20 md:py-24">
-      <div className="mx-auto max-w-6xl">
+    <section id="procedures" className="relative overflow-hidden px-6 py-20 md:py-24">
+      {/* Couche 1 : Image de fond about-bg */}
+      <Image
+        src="/about-bg.jpg"
+        alt="Procedures Background"
+        fill
+        priority
+        className="object-cover object-center z-0"
+      />
+
+      {/* Couche 2 : Overlay blanc léger (bg-white/10) */}
+      <div className="absolute inset-0 bg-white/20 z-10" />
+
+      {/* Couche 3 : Contenu principal */}
+      <div className="relative z-20 mx-auto max-w-6xl">
         {/* Header */}
         <div className="mb-14">
           <h2 className="text-4xl font-extrabold leading-tight text-brand-primary md:text-5xl">
             Nos <span className="text-brand-danger">Procédures</span>
           </h2>
           <span className="mt-4 block h-0.75 w-20 rounded-full bg-brand-danger/80" />
-          <p className="mt-5 max-w-xl text-base leading-7 text-slate-500 md:text-lg">
+          <p className="mt-5 max-w-xl text-base leading-7 text-slate-900 md:text-lg font-medium">
             De la première rencontre jusqu&apos;au bilan final, voici comment nous travaillons.
           </p>
         </div>
@@ -77,7 +92,7 @@ export default function ProceduresSection() {
               const Icon = proc.icon;
               return (
                 <Fragment key={proc.step}>
-                  <div className="relative flex-1 overflow-hidden rounded-2xl border border-brand-primary/10 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+                  <div className="relative flex-1 overflow-hidden rounded-2xl border border-brand-primary/10 bg-white p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
                     <span className="pointer-events-none absolute right-4 top-2 select-none text-7xl font-black leading-none text-brand-primary/10">
                       {String(proc.step).padStart(2, "0")}
                     </span>
@@ -89,8 +104,8 @@ export default function ProceduresSection() {
                   </div>
                   {i < 2 && (
                     <>
-                      <ChevronRight className="mx-auto hidden shrink-0 text-brand-danger/60 lg:block" size={28} />
-                      <ChevronDown className="mx-auto shrink-0 text-brand-danger/60 lg:hidden" size={24} />
+                      <ChevronRight className="mx-auto hidden shrink-0 text-brand-danger/80 lg:block" size={28} />
+                      <ChevronDown className="mx-auto shrink-0 text-brand-danger/80 lg:hidden" size={24} />
                     </>
                   )}
                 </Fragment>
@@ -100,7 +115,7 @@ export default function ProceduresSection() {
 
           {/* Mobile connector */}
           <div className="flex items-center justify-center py-1 lg:hidden">
-            <ChevronDown className="text-brand-danger/70" size={30} strokeWidth={2.5} />
+            <ChevronDown className="text-brand-danger" size={30} strokeWidth={2.5} />
           </div>
 
           {/* Row 2: steps 6–4 */}
@@ -109,7 +124,7 @@ export default function ProceduresSection() {
               const Icon = proc.icon;
               return (
                 <Fragment key={proc.step}>
-                  <div className="relative flex-1 overflow-hidden rounded-2xl border border-brand-danger/15 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+                  <div className="relative flex-1 overflow-hidden rounded-2xl border border-brand-danger/15 bg-white p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
                     <span className="pointer-events-none absolute right-4 top-2 select-none text-7xl font-black leading-none text-brand-danger/10">
                       {String(proc.step).padStart(2, "0")}
                     </span>
@@ -121,8 +136,8 @@ export default function ProceduresSection() {
                   </div>
                   {i < 2 && (
                     <>
-                      <ChevronLeft className="mx-auto hidden shrink-0 text-brand-danger/60 lg:block" size={28} />
-                      <ChevronDown className="mx-auto shrink-0 text-brand-danger/60 lg:hidden" size={24} />
+                      <ChevronLeft className="mx-auto hidden shrink-0 text-brand-danger/80 lg:block" size={28} />
+                      <ChevronDown className="mx-auto shrink-0 text-brand-danger/80 lg:hidden" size={24} />
                     </>
                   )}
                 </Fragment>
@@ -132,12 +147,12 @@ export default function ProceduresSection() {
 
           {/* Desktop side connectors: 3 -> 4 and 6 -> 1 */}
           <div className="pointer-events-none absolute bottom-[7.2rem] right-2 hidden items-center lg:flex">
-            <div className="h-28 w-8 rounded-r-full border-r-2 border-y-2 border-brand-danger/40" />
-            <ChevronDown className="-ml-1 text-brand-danger/70" size={24} strokeWidth={2.5} />
+            <div className="h-28 w-8 rounded-r-full border-r-2 border-y-2 border-brand-danger/50" />
+            <ChevronDown className="-ml-1 text-brand-danger" size={24} strokeWidth={2.5} />
           </div>
           <div className="pointer-events-none absolute left-2 top-[7.2rem] hidden items-center lg:flex">
-            <ChevronUp className="-mr-1 text-brand-danger/70" size={24} strokeWidth={2.5} />
-            <div className="h-28 w-8 rounded-l-full border-l-2 border-y-2 border-brand-danger/40" />
+            <ChevronUp className="-mr-1 text-brand-danger" size={24} strokeWidth={2.5} />
+            <div className="h-28 w-8 rounded-l-full border-l-2 border-y-2 border-brand-danger/50" />
           </div>
         </div>
       </div>

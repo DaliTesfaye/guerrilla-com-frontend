@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { JSX, useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { BriefcaseBusiness, CalendarRange, Users, UserRoundSearch } from "lucide-react";
 import axios from "axios";
@@ -46,9 +46,9 @@ function StatCard({
     <article className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <p className="text-xs font-medium uppercase tracking-wide text-gray-500">{label}</p>
-        <span className="rounded-lg bg-[#e9ebff] p-2 text-[#2E3191]">{icon}</span>
+        <span className="rounded-lg bg-[#e9ebff] p-2 text-brand-primary">{icon}</span>
       </div>
-      <p className="mt-2 text-2xl font-bold text-[#2E3191]">{value}</p>
+      <p className="mt-2 text-2xl font-bold text-brand-primary">{value}</p>
     </article>
   );
 }
@@ -232,7 +232,7 @@ export default function ParticipantsPage() {
   return (
     <section className="space-y-6">
       {toast && (
-        <div className="fixed right-6 top-6 z-[80]">
+        <div className="fixed right-6 top-6 z-80">
           <div
             className={`rounded-lg border px-4 py-3 text-sm shadow-lg ${
               toast.type === "success"
@@ -248,13 +248,13 @@ export default function ParticipantsPage() {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-semibold text-gray-900">
-            <Users size={22} className="text-[#2E3191]" />
+            <Users size={22} className="text-brand-primary" />
             Participants
           </h1>
           <p className="mt-1 text-sm text-gray-500">Vue centralisée des participations aux événements.</p>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-3 lg:w-[720px]">
+        <div className="grid gap-3 sm:grid-cols-3 lg:w-180">
           <div className="space-y-1.5">
             <label htmlFor="participant-search" className="text-xs font-medium text-gray-600">
               Rechercher
@@ -265,7 +265,7 @@ export default function ParticipantsPage() {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Nom ou email"
-              className="h-11 w-full rounded-lg border border-gray-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E3191]"
+              className="h-11 w-full rounded-lg border border-gray-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
             />
           </div>
 
@@ -278,7 +278,7 @@ export default function ParticipantsPage() {
               value={projectFilter}
               onChange={(e) => setProjectFilter(e.target.value)}
               disabled={filtersLoading}
-              className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E3191] disabled:bg-gray-50"
+              className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary disabled:bg-gray-50"
             >
               <option value="">Tous les projets</option>
               {projectOptions.map((project) => (
@@ -298,7 +298,7 @@ export default function ParticipantsPage() {
               value={eventFilter}
               onChange={(e) => setEventFilter(e.target.value)}
               disabled={filtersLoading}
-              className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E3191] disabled:bg-gray-50"
+              className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary disabled:bg-gray-50"
             >
               <option value="">Tous les evenements</option>
               {eventOptions.map((event) => (
@@ -312,7 +312,7 @@ export default function ParticipantsPage() {
       </div>
 
       {error && (
-        <div className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-[#C7072C]">
+        <div className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-brand-danger">
           {error}
         </div>
       )}
@@ -349,7 +349,7 @@ export default function ParticipantsPage() {
                 await handleSendReminders();
               }}
               disabled={sendingReminders || !eventFilter}
-              className="inline-flex items-center gap-2 rounded-lg bg-[#2E3191] px-4 py-2 text-sm font-medium text-white hover:bg-[#1e2266] transition disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-lg bg-brand-primary px-4 py-2 text-sm font-medium text-white hover:bg-[#1e2266] transition disabled:opacity-60"
             >
               {sendingReminders ? "Envoi des rappels..." : "📧 Envoyer les rappels"}
             </button>

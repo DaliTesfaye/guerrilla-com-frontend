@@ -6,7 +6,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 const slides = [
   {
     id: 1,
-    bgImage: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1920&q=80",
+    // 📂 Image locale : à placer dans public/hero-1.jpg
+    bgImage: "/hero-4.jpg", 
     headline: "Nous créons des expériences",
     accent: "inoubliables",
     subtext:
@@ -14,7 +15,8 @@ const slides = [
   },
   {
     id: 2,
-    bgImage: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1920&q=80",
+    // 📂 Image locale : à placer dans public/hero-2.jpg
+    bgImage: "/hero-2.jpg",
     headline: "Des événements qui",
     accent: "marquent les esprits",
     subtext:
@@ -22,7 +24,8 @@ const slides = [
   },
   {
     id: 3,
-    bgImage: "https://images.unsplash.com/photo-1511578314322-379afb476865?w=1920&q=80",
+    // 📂 Image locale : à placer dans public/hero-3.jpg
+    bgImage: "/hero-5.jpg",
     headline: "Votre marque mérite",
     accent: "le meilleur",
     subtext:
@@ -75,7 +78,7 @@ export default function HeroSection() {
           }}
         >
           {/* Dark brand overlay */}
-          <div className="absolute inset-0 bg-brand-primary/65" />
+          <div className="absolute inset-0 bg-brand-primary/50" />
         </div>
       ))}
 

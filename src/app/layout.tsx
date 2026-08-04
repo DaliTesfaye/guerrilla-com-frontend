@@ -1,13 +1,6 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 // @ts-expect-error -- Global CSS import handled by Next.js.
 import "./globals.css";
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "Guerrilla Com",
@@ -21,7 +14,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <body className={`${inter.variable} font-sans antialiased`}>
+      {/* 
+        La classe "font-sans" va maintenant chercher Century Gothic 
+        comme configuré dans ton globals.css ! 
+      */}
+      <body className="font-sans antialiased">
         {children}
       </body>
     </html>

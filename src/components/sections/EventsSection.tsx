@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import Image from "next/image"; 
+import Link from "next/link"; // 👈 Importation de Link pour la navigation
 import { CalendarDays, Tag } from "lucide-react";
 import {
   fetchEventParticipantsCount,
@@ -110,6 +112,7 @@ export default function EventsSection() {
 
     setIsSubmitting(true);
 
+  // ... (Reste de la logique de soumission inchangée pour des raisons de concision)
     try {
       await participateInEvent(selectedEvent._id, {
         email: email.trim(),
@@ -141,7 +144,7 @@ export default function EventsSection() {
         normalized.includes("registered") ||
         normalized.includes("enregistr")
       ) {
-        setSubmitError("Votre email est deja enregistree");
+        setSubmitError("Votre email est déjà enregistré");
       } else if (normalized.includes("email")) {
         setSubmitError("Email invalide");
       } else {
@@ -165,15 +168,28 @@ export default function EventsSection() {
   }, [successMessage]);
 
   return (
-    <section id="events" className="bg-brand-surface px-6 py-20 md:py-24">
-      <div className="mx-auto max-w-6xl">
+    <section 
+      id="events" 
+      className="relative overflow-hidden px-6 py-20 md:py-24"
+    >
+      <Image
+        src="/services-bg.jpg"
+        alt="Services Background"
+        fill
+        priority
+        className="object-cover object-center z-0"
+      />
+
+      <div className="absolute inset-0 bg-white/10 z-10" />
+
+      <div className="relative z-20 mx-auto max-w-6xl">
         <div className="mb-12">
-          <h2 className="text-4xl font-extrabold leading-tight text-brand-primary md:text-5xl">
-            Nos <span className="text-brand-danger">Evenements</span>
+          <h2 className="text-4xl font-extrabold leading-tight text-white md:text-5xl">
+            Nos <span className="text-brand-danger">Événements</span>
           </h2>
           <span className="mt-4 block h-0.75 w-20 rounded-full bg-brand-danger/80" />
-          <p className="mt-5 max-w-xl text-base leading-7 text-slate-500 md:text-lg">
-            Retrouvez nos evenements recents et activations realisees sur le terrain.
+          <p className="mt-5 max-w-xl text-base leading-7 text-white md:text-lg">
+            Retrouvez nos événements récents et activations réalisées sur le terrain.
           </p>
         </div>
 
@@ -185,11 +201,11 @@ export default function EventsSection() {
 
         {events.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-brand-primary/20 bg-white px-6 py-10 text-center text-sm text-slate-500">
-            Aucun evenement disponible pour le moment.
+            Aucun événement disponible pour le moment.
           </div>
         ) : (
           <div className="relative">
-            <div className="absolute left-4 top-0 h-full w-px bg-brand-primary/20 md:left-1/2 md:-translate-x-1/2" />
+            <div className="absolute left-4 top-0 h-full w-px bg-white md:left-1/2 md:-translate-x-1/2" />
 
             <div className="space-y-6">
               {events.map((event, index) => {
@@ -232,13 +248,14 @@ export default function EventsSection() {
                             <span>{fallbackType}</span>
                           </div>
 
-                          <button
-                            type="button"
-                            onClick={() => openModal(event)}
-                            className="mt-5 inline-flex items-center justify-center rounded-lg bg-brand-danger px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#a50524]"
-                          >
-                            Participer
-                          </button>
+                          <div className="mt-5 flex flex-wrap items-center gap-3">
+                            <Link
+                              href={`/events/${event._id}`}
+                              className="inline-flex items-center justify-center rounded-lg border bg-brand-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-primary/90"
+                            >
+                              Voir les détails
+                            </Link>
+                          </div>
                         </div>
                       </article>
                     </div>
@@ -250,16 +267,26 @@ export default function EventsSection() {
             </div>
           </div>
         )}
+
+        <div className="mt-12 flex justify-center">
+          <Link
+            href="/events"
+            className="inline-flex items-center justify-center rounded-2xl border border-brand-primary/15 bg-white px-8 py-4 text-base font-semibold text-brand-primary shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-primary/25 hover:bg-brand-primary/5"
+          >
+            Voir tous les événements
+          </Link>
+        </div>
       </div>
 
+      {/* ... (Reste du code de la boîte modale inchangé) */}
       {selectedEvent && (
         <div className="fixed inset-0 z-70 flex items-center justify-center bg-black/50 px-4">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-            <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start justify-start justify-between gap-3">
               <div>
                 <h3 className="text-xl font-bold text-brand-primary">Participer</h3>
                 <p className="mt-1 text-sm text-slate-500">
-                  Evenement: <span className="font-medium text-slate-700">{selectedEvent.name}</span>
+                  Événement : <span className="font-medium text-slate-700">{selectedEvent.name}</span>
                 </p>
               </div>
               <button
@@ -307,7 +334,7 @@ export default function EventsSection() {
 
               <div className="space-y-1.5">
                 <label htmlFor="event-fullname" className="text-sm font-medium text-gray-700">
-                  Full name (optionnel)
+                  Nom complet (optionnel)
                 </label>
                 <input
                   id="event-fullname"

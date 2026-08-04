@@ -20,10 +20,10 @@ export default function Home() {
       <ServicesSection />
       <ProjectsSection />
       <EventsSection />
-      <FacebookFeed />
       <ProceduresSection />
+      <FacebookFeed />
       <PartenairesSection />
-      <ContactSection />
+      {/* <ContactSection /> */}
       <Chatbot />
       <Footer />
     </main>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Menu, X } from "lucide-react";
 
 const navLinks = [
@@ -9,8 +10,8 @@ const navLinks = [
   { label: "SERVICES", sectionId: "services" },
   { label: "PROJETS", sectionId: "projects" },
   { label: "EVENEMENTS", sectionId: "events" },
-  { label: "ACTUALITÉ", sectionId: "actualite" },
   { label: "PROCEDURES", sectionId: "procedures" },
+  { label: "ACTUALITÉ", sectionId: "actualite" },
   { label: "PARTENAIRES", sectionId: "partenaires" },
 ];
 
@@ -85,12 +86,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between relative">
 
         {/* Logo */}
-        <button
-          type="button"
-          onClick={() => handleNavClick("hero")}
-          className="shrink-0"
-          aria-label="Retour en haut"
-        >
+        <Link href="/" className="shrink-0" aria-label="Retour à l'accueil">
           <Image
             src="/logo.png"
             alt="Guerrilla Com"
@@ -99,7 +95,7 @@ export default function Navbar() {
             priority
             className="h-10 w-auto object-contain"
           />
-        </button>
+        </Link>
 
         {/* Desktop nav links — centered */}
         <nav className="hidden md:flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
@@ -109,7 +105,14 @@ export default function Navbar() {
               <button
                 key={link.sectionId}
                 onClick={() => handleNavClick(link.sectionId)}
-                className="group relative px-4 py-2 text-sm font-medium transition-all duration-200 text-white whitespace-nowrap"
+                /* 
+                  classes appliquées ici :
+                  - text-[15px] (Taille exacte)
+                  - font-normal (Poids 400)
+                  - uppercase (Lettres majuscules)
+                  - text-white (Couleur #FFFFFF)
+                */
+                className="group relative px-4 py-2 text-[15px] font-regular uppercase text-white whitespace-nowrap"
               >
                 {link.label}
                 {/* Underline indicator */}
@@ -153,7 +156,8 @@ export default function Navbar() {
               <button
                 key={link.sectionId}
                 onClick={() => handleNavClick(link.sectionId)}
-                className={`text-left px-4 py-2.5 rounded-lg text-base font-medium transition-all duration-200 ${
+                /* Même chose ici pour le menu mobile mobile */
+                className={`text-left px-4 py-2.5 rounded-lg text-[15px] font-normal uppercase transition-all duration-200 ${
                   isActive
                     ? "text-brand-danger border-l-2 border-brand-danger pl-3"
                     : "text-white hover:text-brand-danger hover:border-l-2 hover:border-brand-danger hover:pl-3"

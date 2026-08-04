@@ -1,11 +1,29 @@
 "use client";
 
 import { ArrowRight } from "lucide-react";
+import Image from "next/image"; // 👈 Native Next.js Image wrapper
 
 export default function AboutSection() {
   return (
-    <section id="about" className="bg-brand-surface px-6 py-24 md:py-28">
-      <div className="mx-auto grid max-w-7xl gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+    <section 
+      id="about" 
+      className="relative overflow-hidden px-6 py-24 md:py-28" // 👈 Removed bg-brand-surface to prevent color bleeding
+    >
+      {/* Layer 1: The Actual Background Image (z-0) */}
+      <Image
+        src="/about-bg.jpg"
+        alt="Guerrilla Com Background"
+        fill
+        priority
+        className="object-cover object-center z-0"
+      />
+
+
+      <div className="absolute inset-0 bg-white/25 backdrop-blur-[1px] z-10" />
+
+      {/* Layer 3: Main Content Contener (z-20) */}
+      {/* This MUST be z-20 to stay perfectly readable on top of the image and overlay */}
+      <div className="relative z-20 mx-auto grid max-w-7xl gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
         <div>
           <div>
             <h3 className="text-3xl font-black uppercase tracking-[0.08em] text-brand-primary md:text-4xl">
@@ -23,7 +41,7 @@ export default function AboutSection() {
               La création de Guerrilla Com est l’aboutissement de plus de 15 ans d’expérience de notre fondateur dans le secteur de l’évènementiel en Tunisie. Nos prestations de prédilection sont les opérations de pousse à la vente, les activations marketing, les animations GMS, le street marketing et les gadgets promotionnels.
             </p>
             <p>
-                D'ailleurs, vous avez certainement vu ou même acheté certains des gadgets que nous avons introduits en Tunisie pour des opérations de promotions pour des leaders nationaux en FMCG (Yaourt, fromage, biscuit, shampoing ...)
+              D'ailleurs, vous avez certainement vu ou même acheté certains des gadgets que nous avons introduits en Tunisie pour des opérations de promotions pour des leaders nationaux en FMCG (Yaourt, fromage, biscuit, shampoing ...)
             </p>
           </div>
 
