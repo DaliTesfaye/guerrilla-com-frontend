@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-// @ts-expect-error -- Global CSS import handled by Next.js.
+// @ts-ignore
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -14,10 +14,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      {/* 
-        La classe "font-sans" va maintenant chercher Century Gothic 
-        comme configuré dans ton globals.css ! 
-      */}
       <body className="font-sans antialiased">
         {children}
       </body>

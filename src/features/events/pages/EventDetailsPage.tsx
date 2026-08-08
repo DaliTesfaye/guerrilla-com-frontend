@@ -172,10 +172,10 @@ export default function EventDetailsPage() {
       <div className="rounded-2xl border border-gray-200 bg-white p-6">
         <h2 className="text-lg font-semibold text-gray-900">Informations</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+          {/* <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
             <p className="text-xs uppercase tracking-wide text-gray-500">Participants</p>
             <p className="mt-1 text-lg font-semibold text-gray-900">{participantsCount}</p>
-          </div>
+          </div> */}
           <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
             <p className="text-xs uppercase tracking-wide text-gray-500">Jeu</p>
             <p className="mt-1 text-lg font-semibold text-gray-900">

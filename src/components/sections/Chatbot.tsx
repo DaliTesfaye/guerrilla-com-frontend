@@ -10,21 +10,34 @@ interface Message {
 }
 
 const FAQ_RESPONSES = {
-  presentation: "💥 Guerrilla Com est une agence de communication digitale et de développement web de premier plan. Nous aidons les entreprises à construire une image de marque forte, à concevoir des solutions web modernes et à exploser leur visibilité en ligne !",
-  services: "💼 Nos services incluent : La création de sites web (Vitrines, E-commerce, SaaS), le Community Management (Facebook, Instagram, LinkedIn), la publicité payante (Ads), la création d'identité visuelle (Logos, Branding) et la production vidéo.",
-  horaires: "🕒 Nous sommes ouverts du lundi au vendredi, de 08:30 à 17:30. Nous sommes fermés le week-end (samedi et dimanche).",
-  location: "📍 Notre agence est située à Tunis. Vous pouvez consulter notre emplacement exact dans la section 'À PROPOS' de la page principale.",
-  contact: "📞 Pour nous contacter, c'est très simple ! Cliquez sur le bouton 'Nous contacter' en haut à droite pour nous envoyer un message, ou appelez-nous directement sur notre numéro disponible dans le pied de page.",
-  devis: "💰 Chaque projet est unique ! Pour obtenir un devis gratuit et personnalisé adapté à votre budget, nous vous invitons à remplir notre formulaire de contact en bas de page ou à planifier un appel avec notre équipe."
+  presentation:
+    "💥 Guerrilla Com est une agence de communication et de publicité basée en Tunisie. Nous créons des campagnes percutantes et des événements sur-mesure pour propulser votre marque et marquer les esprits !",
+  points_forts:
+    "⚡ Notre valeur ajoutée ? L'organisation d'événements uniques, d'animations de terrain captivantes et de stratégies publicitaires spécialement conçues pour faire briller votre marque !",
+  services:
+    "💼 Nos expertises clés :\n• Street Marketing (opérations de terrain percutantes)\n• Animations GMS (Grandes & Moyennes Surfaces)\n• Événementiel sur-mesure\n• Publicité & Communication globale.",
+  street_marketing:
+    "📣 Le Street Marketing est l'une de nos plus grandes spécialités ! En Tunisie, nous avons à notre actif de nombreuses opérations de terrain réussies pour rapprocher votre marque de son public.",
+  gms:
+    "🛒 Nous organisons des animations GMS (Grandes et Moyennes Surfaces) dynamiques pour mettre en valeur vos produits directement sur le lieu de vente et booster vos conversions.",
+  horaires:
+    "🕒 Nous sommes ouverts du Lundi au Samedi, de 09:00 à 18:00 (Fermé le dimanche).",
+  location:
+    "📍 Nos bureaux se trouvent à l'adresse suivante :\n81, Avenue Habib Bourguiba, Ariana, 2080, Tunisie.",
+  contact:
+    "📞 Vous pouvez nous contacter directement via :\n• Téléphone / WhatsApp : +216 50 699 800\n• Email : guerrillacom.tunisie@gmail.com",
+  devis:
+    "💰 Chaque projet est unique ! Pour obtenir une proposition personnalisée adaptée à vos besoins et votre budget, contactez-nous au +216 50 699 800 ou par email à guerrillacom.tunisie@gmail.com."
 };
 
 const QUICK_SUGGESTIONS = [
   { label: "C'est quoi Guerrilla Com ?", key: "presentation" },
   { label: "Quels sont vos services ?", key: "services" },
+  { label: "Street Marketing & GMS", key: "street_marketing" },
   { label: "Horaires de travail", key: "horaires" },
   { label: "Où êtes-vous situés ?", key: "location" },
-  { label: "Comment vous contacter ?", key: "contact" },
-  { label: "Demander un devis / Prix", key: "devis" }
+  { label: "Téléphone & Email", key: "contact" },
+  { label: "Demander un devis", key: "devis" }
 ];
 
 export default function Chatbot() {
@@ -39,7 +52,7 @@ export default function Chatbot() {
     },
   ]);
   const [isTyping, setIsTyping] = useState(false);
-  
+
   const chatEndRef = useRef<HTMLDivElement>(null);
   const isOpenRef = useRef(isOpen);
 
@@ -47,7 +60,7 @@ export default function Chatbot() {
     isOpenRef.current = isOpen;
   }, [isOpen]);
 
-  // 🕒 Bulle d'accroche visuelle après 6 secondes (Le son a été retiré d'ici)
+  // 🕒 Bulle d'accroche visuelle après 6 secondes
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!isOpenRef.current) {
@@ -62,13 +75,13 @@ export default function Chatbot() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  // Function helper pour centraliser et jouer le son de notification proprement
+  // Function helper pour jouer le son de notification
   const playNotificationSound = () => {
     try {
       const audio = new Audio("/notification.mp3");
-      audio.volume = 0.3; // Volume doux à 30%
+      audio.volume = 0.3;
       audio.play().catch((err) => {
-        console.log("Le son n'a pas pu se lancer (attente d'un clic utilisateur sur la page) :", err);
+        console.log("Lecture audio en attente d'interaction utilisateur :", err);
       });
     } catch (error) {
       console.error("Erreur de chargement du fichier audio :", error);
@@ -81,53 +94,132 @@ export default function Chatbot() {
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "");
 
-    if (cleanInput.includes("guerilla") || cleanInput.includes("c quoi") || cleanInput.includes("c'est quoi") || cleanInput.includes("qui etes") || cleanInput.includes("agence") || cleanInput.includes("presentation")) {
-      if (cleanInput.includes("service")) return FAQ_RESPONSES.services;
+    // Détection Street Marketing
+    if (cleanInput.includes("street") || cleanInput.includes("rue") || cleanInput.includes("terrain")) {
+      return FAQ_RESPONSES.street_marketing;
+    }
+
+    // Détection GMS / Supermarchés
+    if (cleanInput.includes("gms") || cleanInput.includes("supermarche") || cleanInput.includes("magasin") || cleanInput.includes("surface")) {
+      return FAQ_RESPONSES.gms;
+    }
+
+    // Détection Événementiel & Points forts
+    if (cleanInput.includes("evenement") || cleanInput.includes("event") || cleanInput.includes("fort") || cleanInput.includes("avantage") || cleanInput.includes("pourquoi")) {
+      return FAQ_RESPONSES.points_forts;
+    }
+
+    // Détection Présentation Générale
+    if (
+      cleanInput.includes("guerilla") ||
+      cleanInput.includes("c quoi") ||
+      cleanInput.includes("c'est quoi") ||
+      cleanInput.includes("qui etes") ||
+      cleanInput.includes("agence") ||
+      cleanInput.includes("presentation")
+    ) {
       return FAQ_RESPONSES.presentation;
     }
-    if (cleanInput.includes("service") || cleanInput.includes("propose") || cleanInput.includes("site") || cleanInput.includes("facebook") || cleanInput.includes("offre") || cleanInput.includes("faites") || cleanInput.includes("dev") || cleanInput.includes("web")) {
+
+    // Détection Services
+    if (
+      cleanInput.includes("service") ||
+      cleanInput.includes("propose") ||
+      cleanInput.includes("offre") ||
+      cleanInput.includes("faites") ||
+      cleanInput.includes("publicite") ||
+      cleanInput.includes("com")
+    ) {
       return FAQ_RESPONSES.services;
     }
-    if (cleanInput.includes("horaire") || cleanInput.includes("temps") || cleanInput.includes("ouvert") || cleanInput.includes("ferme") || cleanInput.includes("quand") || cleanInput.includes("dispo") || cleanInput.includes("heure")) {
+
+    // Détection Horaires
+    if (
+      cleanInput.includes("horaire") ||
+      cleanInput.includes("temps") ||
+      cleanInput.includes("ouvert") ||
+      cleanInput.includes("ferme") ||
+      cleanInput.includes("quand") ||
+      cleanInput.includes("dispo") ||
+      cleanInput.includes("samedi") ||
+      cleanInput.includes("heure")
+    ) {
       return FAQ_RESPONSES.horaires;
     }
-    if (cleanInput.includes("ou") || cleanInput.includes("adresse") || cleanInput.includes("lieu") || cleanInput.includes("situe") || cleanInput.includes("tunis") || cleanInput.includes("bureau") || cleanInput.includes("emplacement")) {
+
+    // Détection Adresse & Localisation
+    if (
+      cleanInput.includes("ou") ||
+      cleanInput.includes("adresse") ||
+      cleanInput.includes("lieu") ||
+      cleanInput.includes("situe") ||
+      cleanInput.includes("ariana") ||
+      cleanInput.includes("bourguiba") ||
+      cleanInput.includes("bureau") ||
+      cleanInput.includes("emplacement")
+    ) {
       return FAQ_RESPONSES.location;
     }
-    if (cleanInput.includes("contact") || cleanInput.includes("telephone") || cleanInput.includes("num") || cleanInput.includes("mail") || cleanInput.includes("appeler") || cleanInput.includes("joindre") || cleanInput.includes("email")) {
+
+    // Détection Contact / Téléphone / Email
+    if (
+      cleanInput.includes("contact") ||
+      cleanInput.includes("telephone") ||
+      cleanInput.includes("tel") ||
+      cleanInput.includes("whatsapp") ||
+      cleanInput.includes("num") ||
+      cleanInput.includes("mail") ||
+      cleanInput.includes("appeler") ||
+      cleanInput.includes("joindre") ||
+      cleanInput.includes("email")
+    ) {
       return FAQ_RESPONSES.contact;
     }
-    if (cleanInput.includes("prix") || cleanInput.includes("cout") || cleanInput.includes("devis") || cleanInput.includes("combien") || cleanInput.includes("tarif") || cleanInput.includes("argent")) {
+
+    // Détection Prix & Devis
+    if (
+      cleanInput.includes("prix") ||
+      cleanInput.includes("cout") ||
+      cleanInput.includes("devis") ||
+      cleanInput.includes("combien") ||
+      cleanInput.includes("tarif") ||
+      cleanInput.includes("argent") ||
+      cleanInput.includes("budget")
+    ) {
       return FAQ_RESPONSES.devis;
     }
-    if (cleanInput.includes("salut") || cleanInput.includes("bonjour") || cleanInput.includes("slt") || cleanInput.includes("hi") || cleanInput.includes("hello")) {
+
+    // Salutations
+    if (
+      cleanInput.includes("salut") ||
+      cleanInput.includes("bonjour") ||
+      cleanInput.includes("slt") ||
+      cleanInput.includes("hi") ||
+      cleanInput.includes("hello") ||
+      cleanInput.includes("coucou")
+    ) {
       return "Bonjour ! Comment puis-je vous aider aujourd'hui ? 😊";
     }
 
-    return "Désolé, je suis nouveau dans le travail, je n'arrive pas à vous comprendre. Voici ce que vous pouvez me demander :";
+    return "Je n'ai pas bien compris votre demande. N'hésitez pas à choisir l'une des options ci-dessous ou à nous contacter directement au +216 50 699 800 !";
   };
 
   const processMessage = (text: string, customResponse?: string) => {
     if (!text.trim() || isTyping) return;
 
-    // 1. Ajouter le message envoyé par l'utilisateur
     const userMsg: Message = { id: String(Date.now()), sender: "user", text };
     setMessages((prev) => [...prev, userMsg]);
     setInputValue("");
     setIsTyping(true);
 
-    // 2. Simuler le délai de réflexion/écriture du bot
     setTimeout(() => {
       setIsTyping(false);
       const botText = customResponse || getBotResponse(text);
       const botMsg: Message = { id: String(Date.now() + 1), sender: "bot", text: botText };
       
-      // Mettre à jour les messages avec la réponse du bot
       setMessages((prev) => [...prev, botMsg]);
-
-      // 🎵 NEW LOGIC: Déclencher le son de notification pile à la réception du message
       playNotificationSound();
-    }, 800);
+    }, 700);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -161,7 +253,7 @@ export default function Chatbot() {
           
           <p className="font-bold text-xs text-brand-primary mb-0.5 tracking-wide">Guerrilla Bot</p>
           <p className="text-xs text-gray-600 leading-relaxed pr-2">
-            Hey ! Comment ça va ? Comment puis-je vous aider aujourd'hui ? 😊
+            Besoin d'une opération de Street Marketing ou d'un événement sur-mesure ? Discutons-en ! 😊
           </p>
 
           <div className="absolute -bottom-1.25 right-6 w-2.5 h-2.5 bg-white border-r border-b border-gray-100 rotate-45" />
@@ -188,8 +280,8 @@ export default function Chatbot() {
             <div className="flex items-center gap-2">
               <div className="w-2.5 h-2.5 bg-green-400 rounded-full animate-pulse" />
               <div>
-                <h3 className="font-bold text-sm tracking-wide">Assistant Virtuel</h3>
-                <p className="text-xs text-white/70">En ligne</p>
+                <h3 className="font-bold text-sm tracking-wide">Assistant Guerrilla Com</h3>
+                <p className="text-xs text-white/70">En ligne | Ariana, Tunis</p>
               </div>
             </div>
             <button onClick={() => setIsOpen(false)} className="text-white/80 hover:text-white p-1 rounded-lg transition">
@@ -202,7 +294,7 @@ export default function Chatbot() {
             {messages.map((msg) => (
               <div key={msg.id} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
                 <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-sm ${
+                  className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-line shadow-sm ${
                     msg.sender === "user"
                       ? "bg-brand-danger text-white rounded-br-none"
                       : "bg-white text-gray-800 border border-gray-100 rounded-bl-none"
@@ -246,7 +338,7 @@ export default function Chatbot() {
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Écrivez votre message..."
+              placeholder="Posez votre question..."
               disabled={isTyping}
               className="grow bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-xl px-4 py-2 focus:outline-none focus:border-brand-primary focus:bg-white transition disabled:opacity-60"
             />

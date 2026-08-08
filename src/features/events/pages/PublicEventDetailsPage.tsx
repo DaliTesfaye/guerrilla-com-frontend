@@ -218,10 +218,10 @@ export default function PublicEventDetailsPage() {
                         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-50 text-slate-600 border border-slate-100">
                           <Users size={18} />
                         </div>
-                        <div>
+                        {/* <div>
                           <p className="text-xl font-bold tracking-tight text-brand-primary">{participantsCount}</p>
                           <p className="text-[11px] font-medium text-slate-500">Inscriptions enregistrées</p>
-                        </div>
+                        </div> */}
                       </div>
 
                       {event.hasGame && (

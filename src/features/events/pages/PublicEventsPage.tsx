@@ -183,14 +183,14 @@ export default function PublicEventsPage() {
 
                               <h3 className="mt-3 text-lg font-extrabold text-brand-primary">{event.name}</h3>
 
-                              <p className="mt-2 text-sm font-medium text-slate-600">
+                              {/* <p className="mt-2 text-sm font-medium text-slate-600">
                                 👥 {participantsCountByEvent[event._id] ?? 0} participants
-                              </p>
+                              </p> */}
 
-                              <div className="mt-4 flex items-center gap-2 text-xs text-slate-500">
+                              {/* <div className="mt-4 flex items-center gap-2 text-xs text-slate-500">
                                 <Tag size={13} className="shrink-0 text-brand-danger" />
                                 <span>{statusLabels[event.status || "planned"] || event.status || "Planifié"}</span>
-                              </div>
+                              </div> */}
 
                               <div className="mt-5 flex flex-wrap items-center gap-3">
                                 <Link

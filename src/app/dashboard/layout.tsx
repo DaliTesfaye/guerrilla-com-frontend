@@ -50,14 +50,14 @@ export default function DashboardLayout({
 
   if (!hydrated || !token) {
     return (
-      <div className="min-h-screen bg-[#f4f5fb] flex items-center justify-center text-sm text-gray-500">
+      <div className="min-h-screen bg-brand-surface flex items-center justify-center text-sm text-gray-500">
         Chargement...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#f4f5fb] flex">
+    <div className="min-h-screen bg-brand-surface flex">
       <Sidebar />
       <div className="flex-1 min-w-0">
         <Header />

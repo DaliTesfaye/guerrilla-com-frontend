@@ -24,7 +24,7 @@ export default function EventCard({
 }: EventCardProps) {
   return (
     <article
-      className={`rounded-xl border border-gray-200 bg-white px-4 py-4 shadow-sm transition hover:border-[#2E3191]/25 hover:shadow-md ${className}`}
+      className={`rounded-xl border border-gray-200 bg-white px-4 py-4 shadow-sm transition hover:border-brand-primary/25 hover:shadow-md ${className}`}
     >
       <div className="space-y-3">
         <div className="flex items-start gap-3">
@@ -53,7 +53,7 @@ export default function EventCard({
               {event.city} • {event.location}
             </p>
             <p className="mt-1 text-xs text-gray-600">
-              👥 {event.participantsCount ?? 0} participants
+              {/* 👥 {event.participantsCount ?? 0} participants */}
               {event.hasGame ? " • 🎮 Game" : ""}
             </p>
           </div>
@@ -61,7 +61,7 @@ export default function EventCard({
 
         <div className="flex flex-wrap items-center gap-3 pt-1">
           {detailsHref && (
-            <Link href={detailsHref} className="text-xs font-medium text-[#2E3191] hover:underline">
+            <Link href={detailsHref} className="text-xs font-medium text-brand-primary hover:underline">
               Details
             </Link>
           )}
@@ -75,7 +75,7 @@ export default function EventCard({
               type="button"
               onClick={onDelete}
               disabled={deleting}
-              className="text-xs font-medium text-[#C7072C] hover:underline disabled:opacity-60"
+              className="text-xs font-medium text-brand-danger hover:underline disabled:opacity-60"
             >
               {deleting ? "Suppression..." : "Supprimer"}
             </button>

@@ -12,14 +12,7 @@ import {
 } from "@/features/events/api/events";
 import { fetchPublicProjects } from "@/features/projects/api/projects";
 
-const eventMeta = [
-  "Activation marque",
-  "Roadshow",
-  "Animation commerciale",
-  "Team building",
-  "Lancement produit",
-  "Convention",
-];
+;
 
 export default function EventsSection() {
   const [events, setEvents] = useState<PublicEvent[]>([]);
@@ -210,7 +203,7 @@ export default function EventsSection() {
             <div className="space-y-6">
               {events.map((event, index) => {
                 const isLeft = index % 2 === 0;
-                const fallbackType = eventMeta[index % eventMeta.length];
+                
 
                 return (
                   <div key={event._id} className="relative md:flex md:items-center">
@@ -239,14 +232,14 @@ export default function EventsSection() {
 
                           <h3 className="mt-3 text-lg font-extrabold text-brand-primary">{event.name}</h3>
 
-                          <p className="mt-2 text-sm font-medium text-slate-600">
+                          {/* <p className="mt-2 text-sm font-medium text-slate-600">
                             👥 {participantsCountByEvent[event._id] ?? 0} participants
-                          </p>
+                          </p> */}
 
-                          <div className="mt-4 flex items-center gap-2 text-xs text-slate-500">
+                          {/* <div className="mt-4 flex items-center gap-2 text-xs text-slate-500">
                             <Tag size={13} className="shrink-0 text-brand-danger" />
                             <span>{fallbackType}</span>
-                          </div>
+                          </div> */}
 
                           <div className="mt-5 flex flex-wrap items-center gap-3">
                             <Link
