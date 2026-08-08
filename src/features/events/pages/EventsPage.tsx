@@ -75,7 +75,7 @@ export default function EventsPage() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-semibold text-gray-900">
-            <CalendarDays size={22} className="text-[#2E3191]" />
+            <CalendarDays size={22} className="text-brand-primary" />
             Evenements
           </h1>
           <p className="mt-1 text-sm text-gray-500">Liste des evenements de la plateforme</p>
@@ -84,7 +84,7 @@ export default function EventsPage() {
         {canManage && (
           <Link
             href="/dashboard/events/create"
-            className="inline-flex items-center rounded-lg bg-[#2E3191] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#1e2266]"
+            className="inline-flex items-center rounded-lg bg-brand-primary px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-primary-dark"
           >
             + Add Event
           </Link>
@@ -92,7 +92,7 @@ export default function EventsPage() {
       </div>
 
       {error && (
-        <div className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-[#C7072C]">
+        <div className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-brand-danger">
           {error}
         </div>
       )}
