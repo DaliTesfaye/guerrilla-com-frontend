@@ -7,7 +7,7 @@ const slides = [
   {
     id: 1,
     // 📂 Image locale : à placer dans public/hero-1.jpg
-    bgImage: "/hero-4.jpg", 
+    bgImage: "/cov1.jpeg", 
     headline: "Nous créons des expériences",
     accent: "inoubliables",
     subtext:
@@ -16,7 +16,7 @@ const slides = [
   {
     id: 2,
     // 📂 Image locale : à placer dans public/hero-2.jpg
-    bgImage: "/hero-2.jpg",
+    bgImage: "/cov2.jpeg",
     headline: "Des événements qui",
     accent: "marquent les esprits",
     subtext:
@@ -25,7 +25,7 @@ const slides = [
   {
     id: 3,
     // 📂 Image locale : à placer dans public/hero-3.jpg
-    bgImage: "/hero-5.jpg",
+    bgImage: "/cov3.jpeg",
     headline: "Votre marque mérite",
     accent: "le meilleur",
     subtext:

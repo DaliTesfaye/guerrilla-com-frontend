@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Guerrilla Com",
-  description: "Plateforme de gestion Guerrilla Com",
+  description: "Guerrilla Com Agence de publicitée. Leader du marché en tunisie. En collaboration avec microsoft et land'or et plusieurs autres marques internationales.",
 };
 
 export default function RootLayout({
