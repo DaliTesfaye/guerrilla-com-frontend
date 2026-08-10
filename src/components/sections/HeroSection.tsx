@@ -33,6 +33,7 @@ const slides = [
     bgImage: "/cov14.jpg",
     headline: "Innover pour creer des évenements ",
     accent: "uniques",
+    subtext: "Nous transformons vos idées en expériences mémorables qui captivent votre audience.",
   }
   ,
   {
