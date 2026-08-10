@@ -14,7 +14,7 @@ const slides = [
   },
   {
     id: 2,
-    bgImage: "/cov13.jpg",
+    bgImage: "/cov13.JPG",
     headline: "Nous faison rayonner",
     accent: "vos evenements",
     subtext:
