@@ -53,7 +53,7 @@ export default function ServicesSection() {
           </h2>
           <span className="mx-auto mt-4 block h-0.75 w-20 rounded-full bg-brand-danger/80" />
           <p className="mt-6 text-base leading-7 text-white md:text-lg">
-            Nos expertises pour donner plus d&apos;impact a vos campagnes et vos evenements.
+            Guerrilla Com met à votre disposition son expérience confirmée dans six différentes prestations. Découvrez les!
           </p>
         </div>
 
@@ -61,7 +61,7 @@ export default function ServicesSection() {
           {loading ? (
             <p className="text-center text-sm text-slate-500">Chargement des services...</p>
           ) : error ? (
-            <div className="mx-auto max-w-xl rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-center text-sm text-[#C7072C]">
+            <div className="mx-auto max-w-xl rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-center text-sm text-brand-danger">
               {error}
             </div>
           ) : services.length === 0 ? (

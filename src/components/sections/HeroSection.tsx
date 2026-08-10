@@ -6,28 +6,42 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 const slides = [
   {
     id: 1,
-    bgImage: "/cov1.jpeg", 
-    headline: "Nous créons des expériences",
-    accent: "inoubliables",
+    bgImage: "/cov8.jpeg", 
+    headline: "Transoformez vos évenements en ",
+    accent: "expériences unique",
     subtext:
       "Agence de communication événementielle spécialisée dans le marketing de guérilla, le team building et les activations de marque.",
   },
   {
     id: 2,
-    bgImage: "/cov2.jpeg",
-    headline: "Des événements qui",
-    accent: "marquent les esprits",
+    bgImage: "/cov14.jpg",
+    headline: "Nous faison rayonner",
+    accent: "vos evenements",
     subtext:
       "De la conception à l'exécution, nous donnons vie à vos idées avec créativité, précision et impact.",
   },
   {
     id: 3,
-    bgImage: "/cov3.jpeg",
-    headline: "Votre marque mérite",
-    accent: "le meilleur",
+    bgImage: "/cov15.jpg",
+    headline: "Un évenement sur mesure a votre ",
+    accent: "image",
     subtext:
       "Street marketing, PLV, Team Building — nous maîtrisons tous les leviers de la communication terrain.",
   },
+  {
+    id: 4,
+    bgImage: "/cov14.jpg",
+    headline: "Innover pour creer des évenements ",
+    accent: "uniques",
+  }
+  ,
+  {
+    id: 5,
+    bgImage: "/cov10.jpeg",
+    headline: "Laissez nous faire de votre évenement un ",
+    accent: "succés",
+    subtext: "Nous transformons vos idées en expériences mémorables qui captivent votre audience."
+  }
 ];
 
 export default function HeroSection() {
@@ -89,12 +103,12 @@ export default function HeroSection() {
           <span className="text-brand-danger">{slides[current].accent}</span>
         </h1>
 
-        <p
+        {/* <p
           key={`sub-${current}`}
           className="text-white/80 text-lg md:text-xl max-w-2xl leading-relaxed mb-10 animate-fade-in-up"
         >
           {slides[current].subtext}
-        </p>
+        </p> */}
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row items-center gap-4">

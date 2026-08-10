@@ -3,7 +3,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, CalendarDays, User, DollarSign, ArrowRight } from "lucide-react";
+import {
+  MapPin,
+  CalendarDays,
+  User,
+  DollarSign,
+  ArrowRight,
+} from "lucide-react";
 // 🚀 On garde les imports exactement comme ils l'étaient depuis le début
 import {
   fetchPublicProjects,
@@ -41,8 +47,8 @@ export default function ProjectsSection() {
   };
 
   return (
-    <section 
-      id="projects" 
+    <section
+      id="projects"
       className="relative overflow-hidden px-6 py-20 md:py-24"
     >
       {/* Fond d'écran de la section */}
@@ -59,15 +65,17 @@ export default function ProjectsSection() {
 
       {/* Contenu principal */}
       <div className="relative z-20 mx-auto max-w-6xl">
-        
-        {/* Header */}
-        <div className="mb-14">
-          <h2 className="text-4xl font-extrabold leading-tight text-brand-primary md:text-5xl uppercase tracking-tight">
+        {/* Header - Centré & Titre très en gras */}
+        <div className="mb-14 text-center">
+          <h2 className="text-4xl font-black leading-tight text-brand-primary md:text-5xl uppercase tracking-tight">
             Nos <span className="text-brand-danger">Projets</span>
           </h2>
-          <span className="mt-4 block h-1 w-16 rounded-full bg-brand-danger" />
-          <p className="mt-5 max-w-xl text-base leading-7 text-slate-700 font-medium md:text-lg">
-            Découvrez nos réalisations concrètes et l'accompagnement de nos clients partenaires.
+          <span className="mt-4 mx-auto block h-1 w-16 rounded-full bg-brand-danger" />
+          <p className="mt-5 mx-auto max-w-3xl text-base leading-7 text-slate-700 font-medium md:text-lg">
+            Grâce à la confiance de nos valeureux partenaires , nous avons lancé
+            d’innombrables actions marketing couvrant nos divers champs
+            d’expertise. Nous en sommes fiers.​ Découvrez quelques uns de nos
+            projets
           </p>
         </div>
 
@@ -103,7 +111,7 @@ export default function ProjectsSection() {
                       Aucune illustration disponible
                     </div>
                   )}
-                  
+
                   {/* Statut (Top Gauche) */}
                   {item.status && (
                     <span className="absolute top-4 left-4 z-10 inline-block rounded-lg bg-white/95 backdrop-blur-sm px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-brand-primary shadow-sm">
@@ -116,7 +124,8 @@ export default function ProjectsSection() {
                     <div className="absolute top-4 right-4 z-10 inline-flex items-center gap-1.5 rounded-lg bg-black/70 backdrop-blur-sm px-2.5 py-1 text-[10px] font-bold text-white shadow-sm">
                       <CalendarDays size={11} className="text-brand-danger" />
                       <span className="capitalize">
-                        {formatDate(item.startDate)} — {formatDate(item.endDate)}
+                        {formatDate(item.startDate)} —{" "}
+                        {formatDate(item.endDate)}
                       </span>
                     </div>
                   )}
@@ -127,24 +136,34 @@ export default function ProjectsSection() {
                   <h3 className="text-xl font-bold text-brand-primary group-hover:text-brand-danger transition-colors line-clamp-1">
                     {item.name}
                   </h3>
-                  
+
                   <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-slate-500 flex-1">
-                    {item.description?.trim() ? item.description : "Aucune description fournie pour ce projet."}
+                    {item.description?.trim()
+                      ? item.description
+                      : "Aucune description fournie pour ce projet."}
                   </p>
 
                   {/* Métadonnées dynamiques de la DB */}
                   <div className="mt-6 border-t border-slate-100 pt-4 space-y-2.5 text-[12px] text-slate-600 font-medium">
                     {item.clientName && (
                       <div className="flex items-center gap-2.5">
-                        <User size={14} className="shrink-0 text-brand-primary" />
+                        <User
+                          size={14}
+                          className="shrink-0 text-brand-primary"
+                        />
                         <span className="text-slate-500">Client :</span>
-                        <span className="text-slate-800 font-semibold">{item.clientName}</span>
+                        <span className="text-slate-800 font-semibold">
+                          {item.clientName}
+                        </span>
                       </div>
                     )}
-                    
+
                     {item.budget !== undefined && (
                       <div className="flex items-center gap-2.5">
-                        <DollarSign size={14} className="shrink-0 text-emerald-600" />
+                        <DollarSign
+                          size={14}
+                          className="shrink-0 text-emerald-600"
+                        />
                         <span className="text-slate-500">Budget :</span>
                         <span className="text-slate-800 font-semibold">
                           {new Intl.NumberFormat("fr-FR", {
@@ -163,7 +182,10 @@ export default function ProjectsSection() {
                     className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand-primary py-3 text-xs font-bold text-white transition-all duration-200 hover:bg-brand-primary-dark shadow-sm"
                   >
                     Voir détails
-                    <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
+                    <ArrowRight
+                      size={14}
+                      className="transition-transform group-hover:translate-x-0.5"
+                    />
                   </Link>
                 </div>
               </div>
