@@ -6,7 +6,6 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 const slides = [
   {
     id: 1,
-    // 📂 Image locale : à placer dans public/hero-1.jpg
     bgImage: "/cov1.jpeg", 
     headline: "Nous créons des expériences",
     accent: "inoubliables",
@@ -15,7 +14,6 @@ const slides = [
   },
   {
     id: 2,
-    // 📂 Image locale : à placer dans public/hero-2.jpg
     bgImage: "/cov2.jpeg",
     headline: "Des événements qui",
     accent: "marquent les esprits",
@@ -24,7 +22,6 @@ const slides = [
   },
   {
     id: 3,
-    // 📂 Image locale : à placer dans public/hero-3.jpg
     bgImage: "/cov3.jpeg",
     headline: "Votre marque mérite",
     accent: "le meilleur",
@@ -112,10 +109,11 @@ export default function HeroSection() {
             Découvrir nos services
           </a>
           <a
-            href="#contact"
+            href="#footer"
             onClick={(e) => {
               e.preventDefault();
-              document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
+              const footer = document.querySelector("footer") || document.getElementById("footer");
+              footer?.scrollIntoView({ behavior: "smooth" });
             }}
             className="px-8 py-3.5 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-brand-primary transition-all duration-200 hover:-translate-y-0.5"
           >

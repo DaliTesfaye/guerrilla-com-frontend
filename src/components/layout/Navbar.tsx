@@ -27,17 +27,20 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // 🔥 FIXED: Bulletproof position-sorted scroll spy loop
+  // Position-sorted scroll spy loop
   useEffect(() => {
     const sectionIds = [...navLinks.map((l) => l.sectionId), "contact"];
 
     const onScroll = () => {
       const scrollY = window.scrollY + 120; // Comfort offset for navbar height + spacing
 
-      // 1. Map all sections to their real layout positions, filtering out any missing elements
+      // 1. Map all sections to their real layout positions (including footer as fallback for contact)
       const elements = sectionIds
         .map((id) => {
-          const el = document.getElementById(id);
+          let el = document.getElementById(id);
+          if (!el && id === "contact") {
+            el = document.querySelector("footer") || document.getElementById("footer");
+          }
           return el ? { id, top: el.offsetTop } : null;
         })
         .filter((item): item is { id: string; top: number } => item !== null);
@@ -68,7 +71,13 @@ export default function Navbar() {
 
   const handleNavClick = (sectionId: string) => {
     setIsOpen(false);
-    const el = document.getElementById(sectionId);
+
+    // Look for target by ID, falling back to <footer> for contact if ID is not set
+    let el = document.getElementById(sectionId);
+    if (!el && sectionId === "contact") {
+      el = document.querySelector("footer") || document.getElementById("footer");
+    }
+
     if (!el) return;
     el.scrollIntoView({ behavior: "smooth" });
 
@@ -105,14 +114,7 @@ export default function Navbar() {
               <button
                 key={link.sectionId}
                 onClick={() => handleNavClick(link.sectionId)}
-                /* 
-                  classes appliquées ici :
-                  - text-[15px] (Taille exacte)
-                  - font-normal (Poids 400)
-                  - uppercase (Lettres majuscules)
-                  - text-white (Couleur #FFFFFF)
-                */
-                className="group relative px-4 py-2 text-[15px] font-regular uppercase text-white whitespace-nowrap"
+                className="group relative px-4 py-2 text-[15px] font-normal uppercase text-white whitespace-nowrap"
               >
                 {link.label}
                 {/* Underline indicator */}
@@ -156,7 +158,6 @@ export default function Navbar() {
               <button
                 key={link.sectionId}
                 onClick={() => handleNavClick(link.sectionId)}
-                /* Même chose ici pour le menu mobile mobile */
                 className={`text-left px-4 py-2.5 rounded-lg text-[15px] font-normal uppercase transition-all duration-200 ${
                   isActive
                     ? "text-brand-danger border-l-2 border-brand-danger pl-3"
