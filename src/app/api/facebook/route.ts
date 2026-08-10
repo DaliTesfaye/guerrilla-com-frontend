@@ -7,12 +7,12 @@ export async function GET() {
   if (!pageId || !systemUserToken) {
     return NextResponse.json(
       { error: 'Facebook Page ID or Access Token is missing in environment variables.' },
-      { status: 500 }
+      { status: 400 }
     );
   }
 
   try {
-    // 1. Obtenir le Page Access Token
+    // 1. Get Page Access Token
     const pageTokenRes = await fetch(
       `https://graph.facebook.com/v19.0/${pageId}?fields=access_token&access_token=${systemUserToken}`
     );
@@ -21,13 +21,13 @@ export async function GET() {
     if (!pageTokenRes.ok || !pageTokenData.access_token) {
       return NextResponse.json(
         { error: 'Failed to retrieve Page Access Token from Meta', details: pageTokenData },
-        { status: pageTokenRes.status }
+        { status: pageTokenRes.status || 400 }
       );
     }
 
     const pageAccessToken = pageTokenData.access_token;
 
-    // 2. Récupérer les posts avec attachments{media} inclus
+    // 2. Fetch posts
     const postsUrl = `https://graph.facebook.com/v19.0/${pageId}/posts?fields=id,message,created_time,full_picture,permalink_url,attachments{media}&limit=10&access_token=${pageAccessToken}`;
 
     const res = await fetch(postsUrl, {
@@ -44,10 +44,9 @@ export async function GET() {
 
     const rawData = await res.json();
 
-    // 3. Normaliser les images et filtrer les posts complètement vides
+    // 3. Normalize posts
     const formattedPosts = (rawData.data || [])
       .map((post: any) => {
-        // Si full_picture est absent, chercher dans attachments
         const attachmentImg = post.attachments?.data?.[0]?.media?.image?.src;
         const imageUrl = post.full_picture || attachmentImg || null;
 
@@ -59,9 +58,8 @@ export async function GET() {
           permalink_url: post.permalink_url,
         };
       })
-      // Filtrer les posts qui n'ont ni texte ni image
       .filter((post: any) => post.message !== null || post.full_picture !== null)
-      .slice(0, 6); // Conserver les 6 plus récents et valides
+      .slice(0, 6);
 
     return NextResponse.json({ data: formattedPosts });
   } catch (error) {
