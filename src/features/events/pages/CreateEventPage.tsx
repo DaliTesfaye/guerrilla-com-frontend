@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createEvent, type CreateEventPayload } from "@/features/events/api/events";
 import { getDashboardProjects, type DashboardProject } from "@/features/projects/api/projects";
-import { fetchServices, type ServiceItem } from "@/features/services/api/services";
+import { SERVICES } from "@/lib/constants/services"; // 1. Direct import from local constants
 import { createEventV2Schema, type CreateEventV2FormData } from "@/lib/validation";
 import { useAuthStore } from "@/store/authStore";
 
@@ -18,7 +18,6 @@ export default function CreateEventPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [projects, setProjects] = useState<DashboardProject[]>([]);
-  const [services, setServices] = useState<ServiceItem[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(true);
   const user = useAuthStore((state) => state.user);
   const canManage = !!user && (user.role === "admin" || user.role === "super_admin");
@@ -59,12 +58,9 @@ export default function CreateEventPage() {
     const loadOptions = async () => {
       setError("");
       try {
-        const [projectsList, servicesList] = await Promise.all([
-          getDashboardProjects(),
-          fetchServices(),
-        ]);
+        // 2. Only fetch projects from Express now
+        const projectsList = await getDashboardProjects();
         setProjects(projectsList);
-        setServices(servicesList);
       } catch (err: unknown) {
         if (axios.isAxiosError(err)) {
           setError(err.response?.data?.message || "Impossible de charger les options.");
@@ -154,7 +150,7 @@ export default function CreateEventPage() {
                 className="w-full h-11 rounded-lg border border-gray-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E3191]"
               />
               {errors.title?.message && (
-                <p className="text-xs text-[#C7072C]">{errors.title.message}</p>
+                <p className="text-xs text-brand-danger">{errors.title.message}</p>
               )}
             </div>
 
@@ -170,7 +166,7 @@ export default function CreateEventPage() {
                 className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E3191]"
               />
               {errors.description?.message && (
-                <p className="text-xs text-[#C7072C]">{errors.description.message}</p>
+                <p className="text-xs text-brand-danger">{errors.description.message}</p>
               )}
             </div>
 
@@ -179,13 +175,14 @@ export default function CreateEventPage() {
                 <label htmlFor="service" className="text-sm font-medium text-gray-700">
                   Service
                 </label>
+                {/* 3. Maps directly over local SERVICES */}
                 <select
                   id="service"
                   {...register("service")}
                   className="w-full h-11 rounded-lg border border-gray-200 px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#2E3191]"
                 >
                   <option value="">Select service</option>
-                  {services.map((service) => (
+                  {SERVICES.map((service) => (
                     <option key={service.id} value={service.id}>
                       {service.name}
                     </option>

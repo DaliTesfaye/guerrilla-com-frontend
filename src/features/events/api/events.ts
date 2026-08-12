@@ -49,6 +49,7 @@ export type PublicEvent = {
   type?: string;
   city?: string;
   location?: string;
+  image?: string; // FIXED: Added image field
   status?: EventStatus;
   participantsCount?: number;
 };
@@ -149,6 +150,7 @@ function mapToPublicEvent(event: EventItem): PublicEvent {
     type: event.service,
     city: event.city,
     location: event.location,
+    image: event.image, // FIXED: Mapped image field to public event
     status: event.status,
     participantsCount: event.participantsCount,
   };

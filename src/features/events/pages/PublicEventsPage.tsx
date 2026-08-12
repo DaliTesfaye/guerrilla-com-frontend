@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, ArrowRight, CalendarDays, MapPin, Search, Tag, Users } from "lucide-react";
+import { ArrowLeft, CalendarDays, Search, Tag } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { fetchEventParticipantsCount, fetchPublicEvents, type PublicEvent } from "@/features/events/api/events";
@@ -22,20 +22,13 @@ function formatDate(value?: string) {
   });
 }
 
-const statusLabels: Record<string, string> = {
-  draft: "Brouillon",
-  planned: "Planifié",
-  ongoing: "En cours",
-  completed: "Terminé",
-};
-
 export default function PublicEventsPage() {
   const [events, setEvents] = useState<PublicEventItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [projectNameById, setProjectNameById] = useState<Record<string, string>>({});
-  const [participantsCountByEvent, setParticipantsCountByEvent] = useState<Record<string, number>>({});
+  const [, setParticipantsCountByEvent] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const loadEvents = async () => {
@@ -141,7 +134,7 @@ export default function PublicEventsPage() {
             {loading ? (
               <div className="py-16 text-center font-semibold text-white">Chargement des événements...</div>
             ) : error ? (
-              <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-[#C7072C]">
+              <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-brand-danger">
                 {error}
               </div>
             ) : filteredEvents.length === 0 ? (
@@ -167,6 +160,7 @@ export default function PublicEventsPage() {
                             <div className="h-1.5 w-full bg-linear-to-r from-brand-primary via-brand-danger/80 to-brand-primary" />
 
                             <div className="p-5">
+                              {/* 1. BADGES & METADATA */}
                               <div className="flex flex-wrap items-center gap-2">
                                 <span className="inline-block rounded-md bg-brand-primary/8 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-brand-primary">
                                   {event.type?.trim() ? event.type : "N/A"}
@@ -181,17 +175,24 @@ export default function PublicEventsPage() {
                                 </span>
                               </div>
 
-                              <h3 className="mt-3 text-lg font-extrabold text-brand-primary">{event.name}</h3>
+                              {/* 2. TITLE */}
+                              <h3 className="mt-3 text-lg font-extrabold text-brand-primary">
+                                {event.name}
+                              </h3>
 
-                              {/* <p className="mt-2 text-sm font-medium text-slate-600">
-                                👥 {participantsCountByEvent[event._id] ?? 0} participants
-                              </p> */}
+                              {/* 3. IMAGE AFTER TITLE */}
+                              {event.image && (
+                                <div className="relative mt-4 h-48 w-full overflow-hidden rounded-xl bg-slate-100">
+                                  <Image
+                                    src={event.image}
+                                    alt={event.name}
+                                    fill
+                                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                  />
+                                </div>
+                              )}
 
-                              {/* <div className="mt-4 flex items-center gap-2 text-xs text-slate-500">
-                                <Tag size={13} className="shrink-0 text-brand-danger" />
-                                <span>{statusLabels[event.status || "planned"] || event.status || "Planifié"}</span>
-                              </div> */}
-
+                              {/* 4. ACTIONS */}
                               <div className="mt-5 flex flex-wrap items-center gap-3">
                                 <Link
                                   href={`/events/${event._id}`}

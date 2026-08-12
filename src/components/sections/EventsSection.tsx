@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import Image from "next/image"; 
-import Link from "next/link"; // 👈 Importation de Link pour la navigation
+import Link from "next/link";
 import { CalendarDays, Tag } from "lucide-react";
 import {
   fetchEventParticipantsCount,
@@ -11,8 +11,6 @@ import {
   type PublicEvent,
 } from "@/features/events/api/events";
 import { fetchPublicProjects } from "@/features/projects/api/projects";
-
-;
 
 export default function EventsSection() {
   const [events, setEvents] = useState<PublicEvent[]>([]);
@@ -62,6 +60,11 @@ export default function EventsSection() {
     loadEvents();
   }, []);
 
+  // Filter & sort to show only the last 4 added/newest events
+  const displayedEvents = [...events]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 4);
+
   const openModal = (event: PublicEvent) => {
     setSelectedEvent(event);
     setFullName("");
@@ -105,7 +108,6 @@ export default function EventsSection() {
 
     setIsSubmitting(true);
 
-  // ... (Reste de la logique de soumission inchangée pour des raisons de concision)
     try {
       await participateInEvent(selectedEvent._id, {
         email: email.trim(),
@@ -192,7 +194,7 @@ export default function EventsSection() {
           </div>
         )}
 
-        {events.length === 0 ? (
+        {displayedEvents.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-brand-primary/20 bg-white px-6 py-10 text-center text-sm text-slate-500">
             Aucun événement disponible pour le moment.
           </div>
@@ -201,9 +203,8 @@ export default function EventsSection() {
             <div className="absolute left-4 top-0 h-full w-px bg-white md:left-1/2 md:-translate-x-1/2" />
 
             <div className="space-y-6">
-              {events.map((event, index) => {
+              {displayedEvents.map((event, index) => {
                 const isLeft = index % 2 === 0;
-                
 
                 return (
                   <div key={event._id} className="relative md:flex md:items-center">
@@ -216,6 +217,7 @@ export default function EventsSection() {
                         <div className="h-1.5 w-full bg-linear-to-r from-brand-primary via-brand-danger/80 to-brand-primary" />
 
                         <div className="p-5">
+                          {/* 1. BADGES & METADATA */}
                           <div className="flex flex-wrap items-center gap-2">
                             <span className="inline-block rounded-md bg-brand-primary/8 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-brand-primary">
                               {event.type?.trim() ? event.type : "N/A"}
@@ -230,17 +232,24 @@ export default function EventsSection() {
                             </span>
                           </div>
 
-                          <h3 className="mt-3 text-lg font-extrabold text-brand-primary">{event.name}</h3>
+                          {/* 2. TITLE & TEXT */}
+                          <h3 className="mt-3 text-lg font-extrabold text-brand-primary">
+                            {event.name}
+                          </h3>
 
-                          {/* <p className="mt-2 text-sm font-medium text-slate-600">
-                            👥 {participantsCountByEvent[event._id] ?? 0} participants
-                          </p> */}
+                          {/* 3. IMAGE RIGHT AFTER TEXT */}
+                          {event.image && (
+                            <div className="relative mt-4 h-48 w-full overflow-hidden rounded-xl bg-slate-100">
+                              <Image
+                                src={event.image}
+                                alt={event.name}
+                                fill
+                                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                              />
+                            </div>
+                          )}
 
-                          {/* <div className="mt-4 flex items-center gap-2 text-xs text-slate-500">
-                            <Tag size={13} className="shrink-0 text-brand-danger" />
-                            <span>{fallbackType}</span>
-                          </div> */}
-
+                          {/* 4. ACTIONS */}
                           <div className="mt-5 flex flex-wrap items-center gap-3">
                             <Link
                               href={`/events/${event._id}`}
@@ -271,11 +280,11 @@ export default function EventsSection() {
         </div>
       </div>
 
-      {/* ... (Reste du code de la boîte modale inchangé) */}
+      {/* PARTICIPATION MODAL */}
       {selectedEvent && (
         <div className="fixed inset-0 z-70 flex items-center justify-center bg-black/50 px-4">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-            <div className="flex items-start justify-start justify-between gap-3">
+            <div className="flex items-start justify-between gap-3">
               <div>
                 <h3 className="text-xl font-bold text-brand-primary">Participer</h3>
                 <p className="mt-1 text-sm text-slate-500">

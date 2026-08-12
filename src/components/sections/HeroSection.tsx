@@ -98,7 +98,7 @@ export default function HeroSection() {
       <div className="relative z-20 h-full flex flex-col items-center justify-center text-center px-6 max-w-4xl mx-auto">
         <h1
           key={`headline-${current}`}
-          className="text-4xl md:text-6xl font-extrabold text-white leading-tight mb-4 animate-fade-in-up"
+          className="text-4xl md:text-6xl font-bold text-white leading-tight mb-4 animate-fade-in-up "
         >
           {slides[current].headline}{" "}
           <span className="text-brand-danger">{slides[current].accent}</span>
@@ -158,7 +158,7 @@ export default function HeroSection() {
       {/* Dot indicators */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2.5">
         {slides.map((_, i) => (
-          <button
+          <button 
             key={i}
             onClick={() => goTo(i)}
             className={`rounded-full transition-all duration-300 ${
